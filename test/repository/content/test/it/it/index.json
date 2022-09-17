@@ -1,0 +1,24 @@
+{
+    "jcr:primaryType": "cq:Page",
+    "jcr:content": {
+        "sling:resourceType": "test/components/structure/p1-page",
+        "jcr:title": "Webpack AEM Server",
+        "jcr:description": "This is a tool to simulate an AEM server using frontend tecnologies and JS language",
+        "isHomepage": true,
+        "root": {
+            "sling:resourceType": "test/components/layout/l1-parsys",
+            "l1-parsys": {
+                "sling:resourceType": "test/components/layout/l1-parsys",
+                "c1-hero": {
+                    "sling:resourceType": "test/components/content/c1-hero",
+                    "usePageTitle": true,
+                    "text": "<p>Text</p>",
+                    "link": "##REF:../../../_partials/basic-link.json"
+                }
+            },
+            "s2-footer": {
+                "sling:resourceType": "test/components/structure/s2-footer"
+            }
+        }
+    }
+}

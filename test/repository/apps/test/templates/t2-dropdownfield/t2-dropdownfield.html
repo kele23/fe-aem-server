@@ -1,0 +1,8 @@
+<template data-sly-template.render="${ @ extraClasses, label, items }">
+    <div class="dropdown" x-data="t2Dropdownfield" x-title="t2-dropdownfield" x-id="['dropdownfield']">
+        <label tabindex="0" class="btn m-1" x-on:click="click()">${label}</label>
+        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52" data-sly-test="${items}">
+            <li data-sly-repeat="${items}"><a>${item.label}</a></li>
+        </ul>
+    </div>
+</template>
