@@ -1,6 +1,6 @@
 {
     "name": "@kele23/webpack-aem-server",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "Webpack AEM Server",
     "main": "cli.js",
     "keywords": [
@@ -35,6 +35,7 @@
         "slash": "^3.0.0",
         "sync-request": "^6.1.0",
         "webpack-dev-middleware": "^5.0.0",
+        "webpack-hot-middleware": "^2.25.0",
         "winston": "^3.7.2",
         "yargs": "^17.1.0"
     },
