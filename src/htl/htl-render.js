@@ -82,7 +82,8 @@ class HTLRender {
             const func = await compiler.compileToFunction(source);
             return await func(runtime);
         } catch (e) {
-            logger.warn(`cannot run file ${componentAbsPath}, an error occurred ${e}`);
+            logger.warn(`Cannot run file ${componentAbsPath} for resource ${global.resource.getPath()}`);
+            logger.warn(`>> ${e.message} -- ${e.stack}`);
         }
         return null;
     }
@@ -115,8 +116,10 @@ class HTLRender {
         return (baseDir, uri) => {
             let res = this.htlResourceResolver.getResource(path.join(resourceType, baseDir, uri));
             if (!res) res = this.htlResourceResolver.getResource(path.join(baseDir, uri));
+            if (!res) res = this.htlResourceResolver.getResource(path.join(resourceType, uri));
             if (!res) res = this.htlResourceResolver.getResource(uri);
-            return this.htlResourceResolver.getSystemPath(res.getPath());
+            if (res) return this.htlResourceResolver.getSystemPath(res.getPath());
+            throw new Error(`Cannot find template ${baseDir} ${uri}`);
         };
     }
 
@@ -151,20 +154,25 @@ class HTLRender {
             const parentGlobals = runtime.globals;
             const parent = parentGlobals.resource;
 
-            const nameSplit = name.split('.');
-            const resourceName = nameSplit[0];
+            let resource = null;
             let selectors = null;
-            if (nameSplit.length > 1) {
-                selectors = nameSplit.slice(1).join('.');
-            }
+            if (!name.startsWith('/')) {
+                const nameSplit = name.split('.');
+                const resourceName = nameSplit[0];
+                if (nameSplit.length > 1) {
+                    selectors = nameSplit.slice(1).join('.');
+                }
 
-            let resource = parent.getChild(resourceName);
-            if (!resource && options.resourceType) {
-                resource = parentGlobals.resourceResolver.makeSynteticResource(
-                    {},
-                    parent.path + '/' + name,
-                    options.resourceType
-                );
+                resource = parent.getChild(resourceName);
+                if (!resource && options.resourceType) {
+                    resource = parentGlobals.resourceResolver.makeSynteticResource(
+                        {},
+                        parent.path + '/' + name,
+                        options.resourceType
+                    );
+                }
+            } else {
+                resource = parentGlobals.resourceResolver.getResource(name);
             }
 
             let newGlobals = {

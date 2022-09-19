@@ -32,5 +32,5 @@ module.exports = {
             logLevel: 'debug',
         },
     ],
-    modelAlias: ['aktComponent'],
+    //modelAlias: ['model'],
 };

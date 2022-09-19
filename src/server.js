@@ -52,7 +52,7 @@ class Server {
 
         //create render and resource resolver
         this.repoReadersObj = crReposObj;
-        this.render = new HTLRender(this.repoReadersObj, this.serverConfig.modelAlias || []);
+        this.render = new HTLRender(this.repoReadersObj, this.serverConfig.modelAlias || ['model']);
         this.proxies = serverConfig.proxies;
 
         this._makeExpressServer();

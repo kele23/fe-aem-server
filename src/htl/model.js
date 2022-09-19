@@ -33,8 +33,14 @@ class Model {
             console: logger,
         });
 
-        const vmScript = new vm.Script(source);
-        return vmScript.runInContext(vmContext);
+        try {
+            const vmScript = new vm.Script(source);
+            return vmScript.runInContext(vmContext);
+        } catch (e) {
+            logger.warn('Cannot exec model ' + this.mpath);
+            logger.warn('>> resource ' + globals.resource.getPath());
+            logger.warn(`>> ${e.message} -- ${e.stackTrace}`);
+        }
     }
 
     static make(mpath) {

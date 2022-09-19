@@ -14,14 +14,15 @@ class ResourceResolver {
      * @returns The path of the resource
      */
     getResource(resourcePath) {
-        //if syntetic then return it
-        if (this.syntetic[resourcePath]) return this.syntetic[resourcePath];
+        // if syntetic then return it
+        if (this.syntetic[resourcePath]) return this._makeResource(resourcePath, this.syntetic[resourcePath]);
+
+        // check absolute path
         if (resourcePath.startsWith('/')) {
-            // absolute path
             return this._innerGetResource(resourcePath);
         }
 
-        // test apps before, than libs if nothing found
+        // check relative path to apps and libs
         const res = this._innerGetResource('/apps/' + resourcePath);
         if (res) return res;
         return this._innerGetResource('/libs/' + resourcePath);
@@ -61,7 +62,7 @@ class ResourceResolver {
 
         for (const name in obj) {
             const child = obj[name];
-            if (typeof child === 'object') {
+            if (typeof child === 'object' || obj[name] == '#TOBECONTINUE#') {
                 const ch = this.getResource(resourcePath + '/' + name);
                 if (ch) result.push(ch);
             }
@@ -84,6 +85,10 @@ class ResourceResolver {
      * @param {Resource} resource
      */
     getValueMap(resource) {
+        // if syntetic then return it
+        if (this.syntetic[resource.getPath()]) return this.syntetic[resource.getPath()];
+
+        // check readers
         const reader = this._getRepoReader(resource.getPath());
         if (reader == null) return null;
         return reader.get(resource.getPath(), this.ctx);
