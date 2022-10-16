@@ -6,9 +6,9 @@
         "jcr:description": "This is a tool to simulate an AEM server using frontend tecnologies and JS language",
         "isHomepage": true,
         "root": {
-            "sling:resourceType": "test/components/layout/l1-parsys",
-            "l1-parsys": {
-                "sling:resourceType": "test/components/layout/l1-parsys",
+            "sling:resourceType": "wcm/foundation/components/parsys",
+            "parsys": {
+                "sling:resourceType": "wcm/foundation/components/parsys",
                 "c1-hero": {
                     "sling:resourceType": "test/components/content/c1-hero",
                     "usePageTitle": true,

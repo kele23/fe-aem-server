@@ -5,9 +5,9 @@
         "jcr:title": "Webpack AEM Server - Sibling Page",
         "isHomepage": true,
         "root": {
-            "sling:resourceType": "test/components/layout/l1-parsys",
+            "sling:resourceType": "wcm/foundation/components/parsys",
             "l1-parsys": {
-                "sling:resourceType": "test/components/layout/l1-parsys",
+                "sling:resourceType": "wcm/foundation/components/parsys",
                 "c1-hero": {
                     "sling:resourceType": "test/components/content/c1-hero",
                     "usePageTitle": true,
