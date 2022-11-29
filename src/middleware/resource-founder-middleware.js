@@ -22,8 +22,9 @@ const rfMiddleware = () => {
             resource = resourceResolver.getResource(parse.dir + '/' + name);
         }
 
+        const selectorsString = selectors.join('.');
         addData(req, 'requestedResource', resource);
-        addData(req, 'requestedSelectors', selectors);
+        addData(req, 'requestedSelectors', selectorsString);
         next();
     };
 };
