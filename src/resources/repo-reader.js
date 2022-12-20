@@ -1,3 +1,6 @@
+const { mergeDeepToPath, deepGet } = require('../utils/utils');
+const path = require('path');
+
 class RepoReader {
     constructor(basePath) {
         this.basePath = basePath;
@@ -30,8 +33,44 @@ class RepoReader {
      * @param {Object} ctx
      * @returns {Object} the repo object
      */
+    // eslint-disable-next-line no-unused-vars
     get(repoPath, ctx) {
-        return this._innerGet(repoPath, ctx);
+        throw 'Please implement this method in a subclass';
+    }
+
+    /**
+     * Resolve the repoPath and returns an object with finalPath and content
+     * Resolve must return an object with finalPath ( founded resource ) and object
+     * if no resources is found then non existing resource must be returned
+     * @param {*} repoPath
+     * @param {*} ctx
+     * @returns
+     */
+    resolve(repoPath, ctx) {
+        //get content
+        const parse = path.parse(repoPath);
+        let name = parse.name + parse.ext;
+        let selectors = [];
+        let content = this.get(parse.dir + '/' + name, ctx);
+        while (content == null && name.indexOf('.') >= 0) {
+            //add selector
+            let sel = name.substring(name.lastIndexOf('.') + 1);
+            selectors.unshift(sel);
+
+            //get new name
+            name = name.substring(0, name.lastIndexOf('.'));
+            content = this.get(parse.dir + '/' + name, ctx);
+        }
+
+        if (!content)
+            content = {
+                'sling:resourceType': 'sling:nonexisting',
+            };
+
+        return {
+            path: repoPath,
+            content,
+        };
     }
 
     /**
@@ -40,8 +79,9 @@ class RepoReader {
      * @param {Object} ctx
      * @returns The system path
      */
+    // eslint-disable-next-line no-unused-vars
     getSystemPath(repoPath, ctx) {
-        return this._innerSystemPath(repoPath, ctx);
+        throw 'Please implement this method in a subclass';
     }
 
     /**
@@ -53,8 +93,17 @@ class RepoReader {
     _getFromCtx(repoPath, ctx) {
         //make context if not exists
         if (!ctx.contents) ctx.contents = {};
-        const ctn = ctx.contents[repoPath];
-        if (ctn) return ctn;
+        return deepGet(ctx.contents, repoPath);
+    }
+
+    /**
+     * Return the current request query string
+     * @param {*} ctx
+     * @returns
+     */
+    _getQuery(ctx) {
+        if (!ctx.request) return {};
+        return ctx.request.query;
     }
 
     /**
@@ -64,22 +113,7 @@ class RepoReader {
      * @param {*} ctx The ctx
      */
     _addToCtx(data, basePath, ctx) {
-        this._explode(data, basePath, ctx.contents);
-    }
-
-    /**
-     * The process that explodes a repository data to obtain a key value object with paths
-     * @param {*} content
-     * @param {*} contentPath
-     * @param {*} ctxContent
-     */
-    _explode(content, contentPath, ctxContent) {
-        ctxContent[contentPath] = content;
-        for (const child in content) {
-            if (typeof content[child] == 'object') {
-                this._explode(content[child], contentPath + '/' + child, ctxContent);
-            }
-        }
+        ctx.contents = mergeDeepToPath(ctx.contents, data, basePath);
     }
 
     // eslint-disable-next-line no-unused-vars

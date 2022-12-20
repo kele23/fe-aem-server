@@ -40,6 +40,11 @@ class BindingsProvider {
             for (const alias of this.modelAlias) {
                 result[alias] = modelResult;
             }
+        } else {
+            const modelResult = currentGlobals.properties;
+            for (const alias of this.modelAlias) {
+                result[alias] = modelResult;
+            }
         }
         if (this.bindings) {
             for (const key in this.bindings) {

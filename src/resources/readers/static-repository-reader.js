@@ -8,9 +8,9 @@ class StaticRepositoryReader extends RepoReader {
         this.sourceDir = repoDir;
     }
 
-    _innerGet(repoPath, ctx) {
+    get(repoPath, ctx) {
         const value = this._getFromCtx(repoPath, ctx);
-        if (value && value != '#TOBECONTINUE#') return value;
+        if (value && !value.tobecontinue) return value;
 
         let basePath = repoPath;
         if (repoPath.indexOf('jcr:content') >= 0) {
@@ -38,11 +38,15 @@ class StaticRepositoryReader extends RepoReader {
             //binary file or folder
             data = {
                 'sling:resourceType': fs.statSync(finalPath).isDirectory() ? 'sling/Folder' : 'nt/file',
+                tobecontinue: false,
             };
         } else {
             // json file ( read it )
             const source = this._checkNesting(fs.readFileSync(finalPath, 'utf8'), finalPath);
-            data = JSON.parse(source);
+            data = {
+                ...JSON.parse(source),
+                tobecontinue: false,
+            };
 
             // read sibling items
             if (fs.existsSync(this.sourceDir + basePath) && fs.statSync(this.sourceDir + basePath).isDirectory()) {
@@ -53,7 +57,7 @@ class StaticRepositoryReader extends RepoReader {
                     .map((name) => (name.endsWith('.json') ? name.substring(0, name.indexOf('.json')) : name));
 
                 for (let name of names) {
-                    data[name] = '#TOBECONTINUE#';
+                    data[name] = { tobecontinue: true };
                 }
             }
         }
@@ -62,7 +66,7 @@ class StaticRepositoryReader extends RepoReader {
         return this._getFromCtx(repoPath, ctx);
     }
 
-    _innerSystemPath(repoPath) {
+    getSystemPath(repoPath) {
         let basePath = repoPath;
         if (repoPath.indexOf('jcr:content') >= 0) {
             basePath = repoPath.substring(0, repoPath.indexOf('jcr:content') - 1);

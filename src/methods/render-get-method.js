@@ -10,7 +10,7 @@ const mtRender = (render) => {
             return;
         }
 
-        const html = await render.rendComponent(resource, selectors);
+        const html = await render.rendComponent(resource, selectors, req);
         res.send(html);
     };
 };

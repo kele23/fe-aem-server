@@ -3,10 +3,12 @@ const path = require('path');
 const RepoReader = require('./repo-reader');
 
 class ResourceResolver {
-    constructor(repoReaders) {
+    constructor(repoReaders, request) {
         this.repoReaders = repoReaders;
         this.syntetic = {};
-        this.ctx = {};
+        this.ctx = {
+            request,
+        };
     }
 
     /**
@@ -28,6 +30,25 @@ class ResourceResolver {
         return this._innerGetResource('/libs/' + resourcePath);
     }
 
+    /**
+     * @param {string} path
+     * @returns The path of the resource
+     */
+    resolve(resourcePath) {
+        // if syntetic then return it
+        if (this.syntetic[resourcePath]) return this._makeResource(resourcePath, this.syntetic[resourcePath]);
+
+        // check absolute path
+        if (resourcePath.startsWith('/')) {
+            return this._innerResolveResource(resourcePath);
+        }
+
+        // check relative path to apps and libs
+        const res = this._innerResolveResource('/apps/' + resourcePath);
+        if (res) return res;
+        return this._innerResolveResource('/libs/' + resourcePath);
+    }
+
     _innerGetResource(resourcePath) {
         const reader = this._getRepoReader(resourcePath);
         if (reader == null) return null;
@@ -35,6 +56,16 @@ class ResourceResolver {
         //otherwise access repo
         const obj = reader.get(resourcePath, this.ctx);
         if (obj) return this._makeResource(resourcePath, obj);
+        return null;
+    }
+
+    _innerResolveResource(resourcePath) {
+        const reader = this._getRepoReader(resourcePath);
+        if (reader == null) return null;
+
+        //otherwise access repo
+        const res = reader.resolve(resourcePath, this.ctx);
+        if (res) return this._makeResource(res.path, res.content);
         return null;
     }
 
@@ -62,7 +93,7 @@ class ResourceResolver {
 
         for (const name in obj) {
             const child = obj[name];
-            if (typeof child === 'object' || obj[name] == '#TOBECONTINUE#') {
+            if (typeof child === 'object') {
                 const ch = this.getResource(resourcePath + '/' + name);
                 if (ch) result.push(ch);
             }
@@ -117,6 +148,16 @@ class ResourceResolver {
         };
         this.syntetic[resourcePath] = obj;
         return this._makeResource(resourcePath, obj);
+    }
+
+    /**
+     * Create a new resource that overrides resource type of the provided resource
+     * @param {*} resource
+     * @param {*} resourceType
+     * @returns
+     */
+    overrideResourceType(resource, resourceType) {
+        return new Resource(resource.getPath(), resourceType, this);
     }
 
     /**

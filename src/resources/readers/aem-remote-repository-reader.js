@@ -9,7 +9,7 @@ class AemRemoteRepositoryReader extends RepoReader {
         this.options = options;
     }
 
-    _innerGet(repoPath, ctx) {
+    get(repoPath, ctx) {
         const value = this._getFromCtx(repoPath, ctx);
         if (value) return value;
 
@@ -33,7 +33,7 @@ class AemRemoteRepositoryReader extends RepoReader {
         return this._getFromCtx(repoPath, ctx);
     }
 
-    _innerSystemPath() {
+    getSystemPath() {
         throw 'Method not available for remote repository';
     }
 

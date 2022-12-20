@@ -3,26 +3,17 @@ const path = require('path');
 
 const rfMiddleware = () => {
     return async (req, res, next) => {
-        //elaborate url -> path
-        const ph = req.baseUrl + req.path;
-        const parse = path.parse(ph);
-
         const resourceResolver = getData(req, 'resourceResolver');
 
-        //get resource
-        let name = parse.name;
-        let selectors = [];
-        let resource = resourceResolver.getResource(parse.dir + '/' + name);
-        while (resource == null && name.indexOf('.') >= 0) {
-            //add selector
-            let sel = name.substring(name.lastIndexOf('.') + 1);
-            selectors.unshift(sel);
-            //get new name
-            name = name.substring(0, name.lastIndexOf('.'));
-            resource = resourceResolver.getResource(parse.dir + '/' + name);
-        }
+        //elaborate resource
+        const ph = req.baseUrl + req.path;
+        const parse = path.parse(ph);
+        const resource = resourceResolver.resolve(parse.dir + '/' + parse.name);
 
-        const selectorsString = selectors.join('.');
+        // get selectors
+        let selectorsString = parse.name.replace(resource.getName(), '');
+        if (selectorsString) selectorsString = selectorsString.substring(1);
+
         addData(req, 'requestedResource', resource);
         addData(req, 'requestedSelectors', selectorsString);
         next();

@@ -47,6 +47,9 @@ class Server {
                 case 'remote':
                     crReposObj[cr.rootPath] = new AemRemoteRepositoryReader(cr.rootPath, cr.aemRemote, cr.options);
                     break;
+
+                case 'custom':
+                    crReposObj[cr.rootPath] = cr.reader;
             }
         }
 

@@ -22,7 +22,7 @@ class HTLRender {
      * @param {Object} compilationOptions
      * @returns {string} HTML
      */
-    async rendComponent(componentResource, selectors) {
+    async rendComponent(componentResource, selectors, request) {
         // get resource resolver
         const htlResource = this.htlResourceResolver.getResource(componentResource.getResourceType());
         if (!htlResource) {
@@ -53,6 +53,7 @@ class HTLRender {
             resourceResolver: componentResource.getResourceResolver(),
             properties: componentResource.getValueMap(),
             pageProperties,
+            request: request,
         };
 
         global = {
@@ -153,34 +154,32 @@ class HTLRender {
         return async (runtime, name, options) => {
             const parentGlobals = runtime.globals;
             const parent = parentGlobals.resource;
+            const resourceResolver = parentGlobals.resourceResolver;
 
             let resource = null;
             let selectors = null;
-            if (!name.startsWith('/')) {
-                const nameSplit = name.split('.');
-                const resourceName = nameSplit[0];
-                if (nameSplit.length > 1) {
-                    selectors = nameSplit.slice(1).join('.');
-                }
 
-                resource = parent.getChild(resourceName);
-                if (!resource && options.resourceType) {
-                    resource = parentGlobals.resourceResolver.makeSynteticResource(
-                        {},
-                        parent.path + '/' + name,
-                        options.resourceType
-                    );
-                }
-            } else {
-                resource = parentGlobals.resourceResolver.getResource(name);
+            let rsPath = name;
+            if (!rsPath.startsWith('/')) {
+                rsPath = parent.getPath() + '/' + name;
+            }
+
+            resource = resourceResolver.resolve(rsPath);
+            const providedName = rsPath.substring(rsPath.lastIndexOf('/') + 1);
+            selectors = providedName.replace(resource.getName(), '');
+
+            // if not existing or with different resource type
+            if (options.resourceType && resource.getResourceType() != options.resourceType) {
+                resource = resourceResolver.overrideResourceType(resource, options.resourceType);
             }
 
             let newGlobals = {
                 pageProperties: parentGlobals.pageProperties,
-                resourceResolver: parentGlobals.resourceResolver,
+                resourceResolver: resourceResolver,
                 wcmmode: parentGlobals.wcmmode,
                 resource: resource,
                 properties: resource.getValueMap(),
+                request: parentGlobals.request,
             };
 
             let globals = {
