@@ -31,6 +31,8 @@ class HTLRender {
 
         // get system path
         const componentPath = this.htlResourceResolver.getSystemPath(htlResource.getPath());
+        if (!componentPath) return null;
+
         const componentName = path.basename(componentPath);
         const componentHtmlFileAbs =
             selectors == null || selectors.length == 0
@@ -115,11 +117,16 @@ class HTLRender {
      */
     _makeScriptResolver(resourceType) {
         return (baseDir, uri) => {
-            let res = this.htlResourceResolver.getResource(path.join(resourceType, baseDir, uri));
-            if (!res) res = this.htlResourceResolver.getResource(path.join(baseDir, uri));
+            let res = this.htlResourceResolver.getResource(uri);
             if (!res) res = this.htlResourceResolver.getResource(path.join(resourceType, uri));
-            if (!res) res = this.htlResourceResolver.getResource(uri);
-            if (res) return this.htlResourceResolver.getSystemPath(res.getPath());
+            if (!res) res = this.htlResourceResolver.getResource(path.join(baseDir, uri));
+            if (!res) res = this.htlResourceResolver.getResource(path.join(resourceType, baseDir, uri));
+
+            if (res) {
+                const componentPath = this.htlResourceResolver.getSystemPath(res.getPath());
+                if (!componentPath) return null;
+                return componentPath;
+            }
             throw new Error(`Cannot find template ${baseDir} ${uri}`);
         };
     }
@@ -191,7 +198,10 @@ class HTLRender {
             if (!htlResource) {
                 return null;
             }
+
             const componentPath = this.htlResourceResolver.getSystemPath(htlResource.getPath());
+            if (!componentPath) return null;
+
             const componentName = path.basename(componentPath);
             const componentHtmlFileAbs =
                 selectors == null || selectors.length == 0
