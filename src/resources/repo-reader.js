@@ -1,5 +1,6 @@
 const { mergeDeepToPath, deepGet } = require('../utils/utils');
 const path = require('path');
+const { getData } = require('../utils/request-variables-utils');
 
 class RepoReader {
     constructor(basePath) {
@@ -16,7 +17,7 @@ class RepoReader {
         let found = null;
         let keyFound = null;
         for (const key in repoReadersObj) {
-            if (resourcePath.startsWith(key)) {
+            if (resourcePath.startsWith(key) || resourcePath == key) {
                 //get the most length
                 if (keyFound == null || keyFound.length < key.length) {
                     keyFound = key;
@@ -104,6 +105,18 @@ class RepoReader {
     _getQuery(ctx) {
         if (!ctx.request) return {};
         return ctx.request.query;
+    }
+
+    /**
+     * Return the current request query string
+     * @param {*} ctx
+     * @returns
+     */
+    _getSelectors(ctx) {
+        if (!ctx.request) return [];
+        const selectors = getData(ctx.request, 'requestedSelectors');
+        if (!selectors) return [];
+        return selectors.split('.');
     }
 
     /**

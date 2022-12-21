@@ -34,10 +34,14 @@ class HTLRender {
         if (!componentPath) return null;
 
         const componentName = path.basename(componentPath);
-        const componentHtmlFileAbs =
-            selectors == null || selectors.length == 0
-                ? path.join(componentPath, `${componentName}.html`)
-                : path.join(componentPath, `${selectors}.html`);
+        let componentHtmlFileAbs = null;
+        if (selectors) {
+            const selectorHtmlFileAbs = path.join(componentPath, `${selectors}.html`);
+            if (fs.existsSync(selectorHtmlFileAbs)) componentHtmlFileAbs = selectorHtmlFileAbs;
+        }
+        if (!componentHtmlFileAbs) componentHtmlFileAbs = path.join(componentPath, `${componentName}.html`);
+
+        // check file exists
         if (!fs.existsSync(componentHtmlFileAbs)) {
             return null;
         }
@@ -174,6 +178,7 @@ class HTLRender {
             resource = resourceResolver.resolve(rsPath);
             const providedName = rsPath.substring(rsPath.lastIndexOf('/') + 1);
             selectors = providedName.replace(resource.getName(), '');
+            if (selectors) selectors = selectors.substring(1);
 
             // if not existing or with different resource type
             if (options.resourceType && resource.getResourceType() != options.resourceType) {
@@ -203,10 +208,13 @@ class HTLRender {
             if (!componentPath) return null;
 
             const componentName = path.basename(componentPath);
-            const componentHtmlFileAbs =
-                selectors == null || selectors.length == 0
-                    ? path.join(componentPath, `${componentName}.html`)
-                    : path.join(componentPath, `${selectors}.html`);
+
+            let componentHtmlFileAbs = null;
+            if (selectors) {
+                const selectorHtmlFileAbs = path.join(componentPath, `${selectors}.html`);
+                if (fs.existsSync(selectorHtmlFileAbs)) componentHtmlFileAbs = selectorHtmlFileAbs;
+            }
+            if (!componentHtmlFileAbs) componentHtmlFileAbs = path.join(componentPath, `${componentName}.html`);
             return await this._rendFile(componentHtmlFileAbs, globals);
         };
     }

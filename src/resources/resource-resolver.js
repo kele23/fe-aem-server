@@ -122,7 +122,11 @@ class ResourceResolver {
         // check readers
         const reader = this._getRepoReader(resource.getPath());
         if (reader == null) return null;
-        return reader.get(resource.getPath(), this.ctx);
+
+        // get data or return empty object
+        const data = reader.get(resource.getPath(), this.ctx);
+        if (!data) return {};
+        return data;
     }
 
     /**
