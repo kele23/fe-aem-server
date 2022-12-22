@@ -1,5 +1,4 @@
 const { mergeDeepToPath, deepGet } = require('../utils/utils');
-const path = require('path');
 const { getData } = require('../utils/request-variables-utils');
 
 class RepoReader {
@@ -48,30 +47,12 @@ class RepoReader {
      * @returns
      */
     resolve(repoPath, ctx) {
-        //get content
-        const parse = path.parse(repoPath);
-        let name = parse.name + parse.ext;
-        let selectors = [];
-        let content = this.get(parse.dir + '/' + name, ctx);
-        while (content == null && name.indexOf('.') >= 0) {
-            //add selector
-            let sel = name.substring(name.lastIndexOf('.') + 1);
-            selectors.unshift(sel);
-
-            //get new name
-            name = name.substring(0, name.lastIndexOf('.'));
-            content = this.get(parse.dir + '/' + name, ctx);
-        }
-
+        let content = this.get(repoPath, ctx);
         if (!content)
             content = {
                 'sling:resourceType': 'sling:nonexisting',
             };
-
-        return {
-            path: repoPath,
-            content,
-        };
+        return content;
     }
 
     /**
@@ -112,11 +93,21 @@ class RepoReader {
      * @param {*} ctx
      * @returns
      */
+    _getSuffix(ctx) {
+        if (!ctx.request) return '';
+        return getData(ctx.request, 'requestedSuffix');
+    }
+
+    /**
+     * Return the current request query string
+     * @param {*} ctx
+     * @returns
+     */
     _getSelectors(ctx) {
         if (!ctx.request) return [];
         const selectors = getData(ctx.request, 'requestedSelectors');
         if (!selectors) return [];
-        return selectors.split('.');
+        return selectors;
     }
 
     /**

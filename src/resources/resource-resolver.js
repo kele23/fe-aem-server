@@ -64,9 +64,8 @@ class ResourceResolver {
         if (reader == null) return null;
 
         //otherwise access repo
-        const res = reader.resolve(resourcePath, this.ctx);
-        if (res) return this._makeResource(res.path, res.content);
-        return null;
+        const content = reader.resolve(resourcePath, this.ctx);
+        return this._makeResource(resourcePath, content);
     }
 
     /**

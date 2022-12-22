@@ -22,7 +22,7 @@ class HTLRender {
      * @param {Object} compilationOptions
      * @returns {string} HTML
      */
-    async rendComponent(componentResource, selectors, request) {
+    async rendComponent(componentResource, selectors = [], request) {
         // get resource resolver
         const htlResource = this.htlResourceResolver.getResource(componentResource.getResourceType());
         if (!htlResource) {
@@ -35,8 +35,8 @@ class HTLRender {
 
         const componentName = path.basename(componentPath);
         let componentHtmlFileAbs = null;
-        if (selectors) {
-            const selectorHtmlFileAbs = path.join(componentPath, `${selectors}.html`);
+        if (selectors.length > 0) {
+            const selectorHtmlFileAbs = path.join(componentPath, `${selectors.join('.')}.html`);
             if (fs.existsSync(selectorHtmlFileAbs)) componentHtmlFileAbs = selectorHtmlFileAbs;
         }
         if (!componentHtmlFileAbs) componentHtmlFileAbs = path.join(componentPath, `${componentName}.html`);
@@ -168,17 +168,23 @@ class HTLRender {
             const resourceResolver = parentGlobals.resourceResolver;
 
             let resource = null;
-            let selectors = null;
+            let selectors = [];
 
             let rsPath = name;
             if (!rsPath.startsWith('/')) {
                 rsPath = parent.getPath() + '/' + name;
             }
 
+            // extract selectors
+            let parse = path.parse(rsPath);
+            while (parse.ext) {
+                selectors = [parse.ext.substring(1), ...selectors];
+                rsPath = parse.dir + '/' + parse.name;
+                parse = path.parse(rsPath);
+            }
+
+            // get resource
             resource = resourceResolver.resolve(rsPath);
-            const providedName = rsPath.substring(rsPath.lastIndexOf('/') + 1);
-            selectors = providedName.replace(resource.getName(), '');
-            if (selectors) selectors = selectors.substring(1);
 
             // if not existing or with different resource type
             if (options.resourceType && resource.getResourceType() != options.resourceType) {
@@ -210,8 +216,8 @@ class HTLRender {
             const componentName = path.basename(componentPath);
 
             let componentHtmlFileAbs = null;
-            if (selectors) {
-                const selectorHtmlFileAbs = path.join(componentPath, `${selectors}.html`);
+            if (selectors.length > 0) {
+                const selectorHtmlFileAbs = path.join(componentPath, `${selectors.join('.')}.html`);
                 if (fs.existsSync(selectorHtmlFileAbs)) componentHtmlFileAbs = selectorHtmlFileAbs;
             }
             if (!componentHtmlFileAbs) componentHtmlFileAbs = path.join(componentPath, `${componentName}.html`);

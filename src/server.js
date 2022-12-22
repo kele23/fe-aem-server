@@ -104,7 +104,7 @@ class Server {
         this.app.use(rfMiddleware());
 
         //methods
-        this.app.get('*.html', mtRender(this.render));
+        this.app.get("*", mtRender(this.render));
     }
 }
 
