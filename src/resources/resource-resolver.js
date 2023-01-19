@@ -34,19 +34,19 @@ class ResourceResolver {
      * @param {string} path
      * @returns The path of the resource
      */
-    resolve(resourcePath) {
+    resolve(resourcePath, resourceType) {
         // if syntetic then return it
         if (this.syntetic[resourcePath]) return this._makeResource(resourcePath, this.syntetic[resourcePath]);
 
         // check absolute path
         if (resourcePath.startsWith('/')) {
-            return this._innerResolveResource(resourcePath);
+            return this._innerResolveResource(resourcePath, resourceType);
         }
 
         // check relative path to apps and libs
-        const res = this._innerResolveResource('/apps/' + resourcePath);
+        const res = this._innerResolveResource('/apps/' + resourcePath, resourceType);
         if (res) return res;
-        return this._innerResolveResource('/libs/' + resourcePath);
+        return this._innerResolveResource('/libs/' + resourcePath, resourceType);
     }
 
     _innerGetResource(resourcePath) {
@@ -59,12 +59,12 @@ class ResourceResolver {
         return null;
     }
 
-    _innerResolveResource(resourcePath) {
+    _innerResolveResource(resourcePath, resourceType) {
         const reader = this._getRepoReader(resourcePath);
         if (reader == null) return null;
 
         //otherwise access repo
-        const content = reader.resolve(resourcePath, this.ctx);
+        const content = reader.resolve(resourcePath, resourceType, this.ctx);
         return this._makeResource(resourcePath, content);
     }
 

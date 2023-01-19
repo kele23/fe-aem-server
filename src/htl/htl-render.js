@@ -183,13 +183,8 @@ class HTLRender {
                 parse = path.parse(rsPath);
             }
 
-            // get resource
-            resource = resourceResolver.resolve(rsPath);
-
-            // if not existing or with different resource type
-            if (options.resourceType && resource.getResourceType() != options.resourceType) {
-                resource = resourceResolver.overrideResourceType(resource, options.resourceType);
-            }
+            // resolve resource with resourceType hint
+            resource = resourceResolver.resolve(rsPath, options.resourceType);
 
             let newGlobals = {
                 pageProperties: parentGlobals.pageProperties,

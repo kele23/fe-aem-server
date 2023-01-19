@@ -46,12 +46,21 @@ class RepoReader {
      * @param {*} ctx
      * @returns
      */
-    resolve(repoPath, ctx) {
+    resolve(repoPath, resourceType, ctx) {
         let content = this.get(repoPath, ctx);
-        if (!content)
+
+        //create content if not exists
+        if (!content) {
             content = {
                 'sling:resourceType': 'sling:nonexisting',
             };
+        }
+
+        //change resource type if different
+        if (resourceType && content['sling:resourceType'] != resourceType) {
+            content['sling:resourceType'] = resourceType;
+        }
+
         return content;
     }
 
