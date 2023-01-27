@@ -23,7 +23,7 @@
         "webpack": "^5.1.0"
     },
     "dependencies": {
-        "@adobe/htlengine": "^6.4.6",
+        "@adobe/htlengine": "^6.4.8",
         "chokidar": "^3.5.3",
         "express": "^4.17.1",
         "glob": "^7.1.6",

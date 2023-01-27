@@ -13,6 +13,7 @@ class Model {
             logger.warn(`Cannot find model with path: ${this.mpath}`);
             return {};
         }
+        const _require = require;
         const source = fs.readFileSync(this.mpath, { encoding: 'utf-8' });
         const vmContext = vm.createContext({
             use: (deps = [], fn = null) => {
@@ -31,6 +32,14 @@ class Model {
                 return fn.apply(globals, objs);
             },
             console: logger,
+            exports,
+            require: (filepath) => {
+                const p = path.resolve(path.dirname(this.mpath), filepath);
+                return _require(p);
+            },
+            module,
+            __filename,
+            __dirname,
         });
 
         try {
