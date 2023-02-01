@@ -216,8 +216,43 @@ class HTLRender {
                 if (fs.existsSync(selectorHtmlFileAbs)) componentHtmlFileAbs = selectorHtmlFileAbs;
             }
             if (!componentHtmlFileAbs) componentHtmlFileAbs = path.join(componentPath, `${componentName}.html`);
-            return await this._rendFile(componentHtmlFileAbs, globals);
+
+            const decoration = this._createDecoration(resource, componentPath, options);
+            console.log(decoration);
+
+            const htmlFileRender = await this._rendFile(componentHtmlFileAbs, globals);
+            return decoration.replace('$$content$$', htmlFileRender);
         };
+    }
+
+    _createDecoration(resource, componentPath, options) {
+        if (!('decoration' in options) || !options.decoration) return '$$content$$';
+
+        const cmpNameSplit = resource.getResourceType().split('/');
+
+        let classes = [cmpNameSplit[cmpNameSplit.length - 1]];
+        if (options.cssClassName) classes = [...classes, ...options.cssClassName.split(' ')];
+
+        let tagName = 'div';
+        let otherAttributes = [];
+
+        // load htmlTag file
+        const htmlTagFileAbs = path.join(componentPath, 'htmlTag.json');
+        if (fs.existsSync(htmlTagFileAbs)) {
+            const source = fs.readFileSync(htmlTagFileAbs, { encoding: 'utf-8' });
+            const htmlTagObj = JSON.parse(source);
+
+            tagName = htmlTagObj?.tagName ? htmlTagObj?.tagName : tagName;
+            classes = htmlTagObj?.classes ? [...classes, ...htmlTagObj?.classes] : classes;
+
+            for (const key in htmlTagObj) {
+                const value = htmlTagObj[key];
+                if (key == 'tagName' || key == 'classes') continue;
+                otherAttributes.push(`${key}="${value}"`);
+            }
+        }
+
+        return `<${tagName} class="${classes.join(' ')}" ${otherAttributes.join(' ')}>$$content$$</${tagName}>`;
     }
 
     /**
