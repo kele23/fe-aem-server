@@ -218,8 +218,6 @@ class HTLRender {
             if (!componentHtmlFileAbs) componentHtmlFileAbs = path.join(componentPath, `${componentName}.html`);
 
             const decoration = this._createDecoration(resource, componentPath, options);
-            console.log(decoration);
-
             const htmlFileRender = await this._rendFile(componentHtmlFileAbs, globals);
             return decoration.replace('$$content$$', htmlFileRender);
         };
