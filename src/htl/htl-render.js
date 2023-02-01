@@ -231,8 +231,6 @@ class HTLRender {
         const cmpNameSplit = resource.getResourceType().split('/');
 
         let classes = [cmpNameSplit[cmpNameSplit.length - 1]];
-        if (options.cssClassName) classes = [...classes, ...options.cssClassName.split(' ')];
-
         let tagName = 'div';
         let otherAttributes = [];
 
@@ -243,7 +241,7 @@ class HTLRender {
             const htmlTagObj = JSON.parse(source);
 
             tagName = htmlTagObj?.tagName ? htmlTagObj?.tagName : tagName;
-            classes = htmlTagObj?.classes ? [...classes, ...htmlTagObj?.classes] : classes;
+            classes = htmlTagObj?.classes ? [...htmlTagObj?.classes] : classes;
 
             for (const key in htmlTagObj) {
                 const value = htmlTagObj[key];
@@ -251,6 +249,9 @@ class HTLRender {
                 otherAttributes.push(`${key}="${value}"`);
             }
         }
+
+        // extra classes from data-sly-resource
+        if (options.cssClassName) classes = [...classes, ...options.cssClassName.split(' ')];
 
         return `<${tagName} class="${classes.join(' ')}" ${otherAttributes.join(' ')}>$$content$$</${tagName}>`;
     }
