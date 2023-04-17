@@ -1,6 +1,5 @@
 const { Compiler, Runtime } = require('@adobe/htlengine');
 const path = require('path');
-const fs = require('fs');
 const BindingsProvider = require('./bindings-provider');
 const logger = require('../utils/logger');
 const ResourceResolver = require('../resources/resource-resolver');
@@ -30,19 +29,20 @@ class HTLRender {
         }
 
         // get system path
-        const componentPath = this.htlResourceResolver.getSystemPath(htlResource.getPath());
+        const componentPath = htlResource.getPath();
         if (!componentPath) return null;
 
         const componentName = path.basename(componentPath);
-        let componentHtmlFileAbs = null;
+
+        let componentHtmlFile = null;
         if (selectors.length > 0) {
-            const selectorHtmlFileAbs = path.join(componentPath, `${selectors.join('.')}.html`);
-            if (fs.existsSync(selectorHtmlFileAbs)) componentHtmlFileAbs = selectorHtmlFileAbs;
+            const selectorHtmlFile = path.join(componentPath, `${selectors.join('.')}.html`);
+            if (this.htlResourceResolver.getResource(selectorHtmlFile)) componentHtmlFile = selectorHtmlFile;
         }
-        if (!componentHtmlFileAbs) componentHtmlFileAbs = path.join(componentPath, `${componentName}.html`);
+        if (!componentHtmlFile) componentHtmlFile = path.join(componentPath, `${componentName}.html`);
 
         // check file exists
-        if (!fs.existsSync(componentHtmlFileAbs)) {
+        if (!this.htlResourceResolver.getResource(componentHtmlFile)) {
             return null;
         }
 
@@ -67,16 +67,16 @@ class HTLRender {
             ...this.bindings.provide(componentResource, global),
         };
 
-        return await this._rendFile(componentHtmlFileAbs, global);
+        return await this._rendFile(componentHtmlFile, global);
     }
 
     /**
      * Render an htl file
-     * @param {string} componentAbsPath
+     * @param {string} componentPath
      * @param {Object} global
      * @returns {string} HTML
      */
-    async _rendFile(componentAbsPath, global) {
+    async _rendFile(filePath, global) {
         const resourceType = global.resource.getResourceType();
 
         const compiler = this._getCompiler(resourceType);
@@ -85,11 +85,11 @@ class HTLRender {
             .withIncludeHandler(this._makeIncludeHandler())
             .setGlobal(global);
         try {
-            const source = fs.readFileSync(componentAbsPath, { encoding: 'utf-8' });
+            const source = await this.htlResourceResolver.readText(filePath);
             const func = await compiler.compileToFunction(source);
             return await func(runtime);
         } catch (e) {
-            logger.warn(`Cannot run file ${componentAbsPath} for resource ${global.resource.getPath()}`);
+            logger.warn(`Cannot run file ${filePath} for resource ${global.resource.getPath()}`);
             logger.warn(`>> ${e.message} -- ${e.stack}`);
         }
         return null;
@@ -205,25 +205,25 @@ class HTLRender {
                 return null;
             }
 
-            const componentPath = this.htlResourceResolver.getSystemPath(htlResource.getPath());
+            const componentPath = htlResource.getPath();
             if (!componentPath) return null;
 
             const componentName = path.basename(componentPath);
 
-            let componentHtmlFileAbs = null;
+            let componentHtmlFile = null;
             if (selectors.length > 0) {
-                const selectorHtmlFileAbs = path.join(componentPath, `${selectors.join('.')}.html`);
-                if (fs.existsSync(selectorHtmlFileAbs)) componentHtmlFileAbs = selectorHtmlFileAbs;
+                const selectorHtmlFile = path.join(componentPath, `${selectors.join('.')}.html`);
+                if (this.htlResourceResolver.getResource(selectorHtmlFile)) componentHtmlFile = selectorHtmlFile;
             }
-            if (!componentHtmlFileAbs) componentHtmlFileAbs = path.join(componentPath, `${componentName}.html`);
+            if (!componentHtmlFile) componentHtmlFile = path.join(componentPath, `${componentName}.html`);
 
-            const decoration = this._createDecoration(resource, componentPath, options);
-            const htmlFileRender = await this._rendFile(componentHtmlFileAbs, globals);
+            const decoration = await this._createDecoration(resource, componentPath, options);
+            const htmlFileRender = await this._rendFile(componentHtmlFile, globals);
             return decoration.replace('$$content$$', htmlFileRender);
         };
     }
 
-    _createDecoration(resource, componentPath, options) {
+    async _createDecoration(resource, componentPath, options) {
         if (!('decoration' in options) || !options.decoration) return '$$content$$';
 
         const cmpNameSplit = resource.getResourceType().split('/');
@@ -233,9 +233,9 @@ class HTLRender {
         let otherAttributes = [];
 
         // load htmlTag file
-        const htmlTagFileAbs = path.join(componentPath, 'htmlTag.json');
-        if (fs.existsSync(htmlTagFileAbs)) {
-            const source = fs.readFileSync(htmlTagFileAbs, { encoding: 'utf-8' });
+        const htmlTagFile = path.join(componentPath, 'htmlTag.json');
+        if (this.htlResourceResolver.getResource(htmlTagFile)) {
+            const source = await this.htlResourceResolver.readText(htmlTagFile);
             const htmlTagObj = JSON.parse(source);
 
             tagName = htmlTagObj?.tagName ? htmlTagObj?.tagName : tagName;

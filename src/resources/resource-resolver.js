@@ -139,6 +139,16 @@ class ResourceResolver {
     }
 
     /**
+     * Read the resource as Text data and return the content
+     * @param {*} resourcePath
+     */
+    async readText(resourcePath) {
+        const reader = this._getRepoReader(resourcePath);
+        if (reader == null) return null;
+        return reader.readText(resourcePath, this.ctx);
+    }
+
+    /**
      * Make a new Syntetic resource
      * @param {Object} content
      * @param {string} resourcePath

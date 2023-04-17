@@ -33,10 +33,6 @@ class AemRemoteRepositoryReader extends RepoReader {
         return this._getFromCtx(repoPath, ctx);
     }
 
-    getSystemPath() {
-        throw 'Method not available for remote repository';
-    }
-
     _getRemoteUrl(repoPath, level) {
         const cleanedPath = repoPath.replace(this.basePath, '');
         if (!this.options.urlFn) {

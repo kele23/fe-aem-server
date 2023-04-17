@@ -41,7 +41,7 @@ class Server {
             switch (cr.type) {
                 case 'file':
                 case 'json':
-                    crReposObj[cr.rootPath] = new StaticRepositoryReader(cr.rootPath, cr.localPath);
+                    crReposObj[cr.rootPath] = new StaticRepositoryReader(cr.rootPath, cr.localPath, cr.options);
                     break;
 
                 case 'remote':
@@ -104,7 +104,7 @@ class Server {
         this.app.use(rfMiddleware());
 
         //methods
-        this.app.get("*", mtRender(this.render));
+        this.app.get('*', mtRender(this.render));
     }
 }
 

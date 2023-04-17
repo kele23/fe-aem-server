@@ -3,9 +3,10 @@ const fs = require('fs');
 const path = require('path');
 
 class StaticRepositoryReader extends RepoReader {
-    constructor(basePath, repoDir) {
+    constructor(basePath, repoDir, options) {
         super(basePath);
         this.sourceDir = repoDir;
+        this.options = options || {};
     }
 
     get(repoPath, ctx) {
@@ -85,6 +86,14 @@ class StaticRepositoryReader extends RepoReader {
             }
         }
         return finalPath;
+    }
+
+    async readText(repoPath) {
+        const systemPath = this.getSystemPath(repoPath);
+        if (!systemPath) return null;
+        const txt = fs.readFileSync(systemPath, { encoding: 'utf-8' });
+        if (!this.options.transformSource) return txt;
+        return await this.options.transformSource(txt, { repoPath, systemPath });
     }
 
     _checkNesting(source, fsPath) {

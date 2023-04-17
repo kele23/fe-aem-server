@@ -76,6 +76,17 @@ class RepoReader {
     }
 
     /**
+     * Read the resource from local system as Text
+     * @param {string} repoPath
+     * @param {Object} ctx
+     * @returns The text content of the resource
+     */
+    // eslint-disable-next-line no-unused-vars
+    async readText(repoPath, ctx) {
+        throw 'Please implement this method in a subclass';
+    }
+
+    /**
      * Get the object from the context
      * @param {*} repoPath The path
      * @param {*} ctx The ctx object
