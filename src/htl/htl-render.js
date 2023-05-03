@@ -1,5 +1,6 @@
 const { Compiler, Runtime } = require('@adobe/htlengine');
 const path = require('path');
+const fs = require('fs');
 const BindingsProvider = require('./bindings-provider');
 const logger = require('../utils/logger');
 const ResourceResolver = require('../resources/resource-resolver');
@@ -76,7 +77,7 @@ class HTLRender {
      * @param {Object} global
      * @returns {string} HTML
      */
-    async _rendFile(filePath, global) {
+    async _rendFile(filePath, global, absolutePath = false) {
         const resourceType = global.resource.getResourceType();
 
         const compiler = this._getCompiler(resourceType);
@@ -85,7 +86,9 @@ class HTLRender {
             .withIncludeHandler(this._makeIncludeHandler())
             .setGlobal(global);
         try {
-            const source = await this.htlResourceResolver.readText(filePath);
+            let source = '';
+            if (!absolutePath) source = await this.htlResourceResolver.readText(filePath);
+            else source = fs.readFileSync(filePath, 'utf-8');
             const func = await compiler.compileToFunction(source);
             return await func(runtime);
         } catch (e) {
@@ -264,7 +267,7 @@ class HTLRender {
         return async (runtime, file) => {
             const absFile = path.resolve(file);
             const globals = runtime.globals;
-            return await this._rendFile(absFile, globals);
+            return await this._rendFile(absFile, globals, true);
         };
     }
 }
