@@ -22,12 +22,6 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\.js$/,
-                enforce: 'pre',
-                loader: 'webpack-import-glob-loader',
-            },
-
-            {
                 test: /\.css$/,
                 exclude: /node_modules/,
                 use: [

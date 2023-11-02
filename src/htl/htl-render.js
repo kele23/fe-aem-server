@@ -1,5 +1,5 @@
 const { Compiler, Runtime } = require('@adobe/htlengine');
-const path = require('path');
+const path = require('path').posix; // only forward slash
 const fs = require('fs');
 const BindingsProvider = require('./bindings-provider');
 const logger = require('../utils/logger');
