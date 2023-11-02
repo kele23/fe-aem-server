@@ -73,13 +73,15 @@ class StaticRepositoryReader extends RepoReader {
             basePath = repoPath.substring(0, repoPath.indexOf('jcr:content') - 1);
         }
 
-        let finalPath = this.sourceDir + basePath + '.json';
+        const repoSys = path.normalize(repoPath);
+
+        let finalPath = path.join(this.sourceDir, repoSys + '.json');
         if (!fs.existsSync(finalPath)) {
             //folder and json extension
-            finalPath = this.sourceDir + basePath + '/index.json';
+            finalPath = path.join(this.sourceDir, basePath, 'index.json');
             if (!fs.existsSync(finalPath)) {
                 //take as binary file
-                finalPath = this.sourceDir + basePath;
+                finalPath = path.join(this.sourceDir, basePath);
                 if (!fs.existsSync(finalPath)) {
                     return null;
                 }

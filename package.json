@@ -12,7 +12,7 @@
     ],
     "repository": "https://github.com/kele23/webpack-aem-server",
     "scripts": {
-        "test-serve": "export NODE_ENV=development && node cli.js --webpack-config test/webpack.config.js --server-config test/server.config.js"
+        "test-serve": "node cli.js --webpack-config test/webpack.config.js --server-config test/server.config.js"
     },
     "author": "Michele Scala <scala233@gmail.com>",
     "license": "MIT",

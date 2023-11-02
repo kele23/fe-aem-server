@@ -1,6 +1,7 @@
 const { Compiler, Runtime } = require('@adobe/htlengine');
 const path = require('path').posix; // only forward slash
 const fs = require('fs');
+const Model = require('./model');
 const BindingsProvider = require('./bindings-provider');
 const logger = require('../utils/logger');
 const ResourceResolver = require('../resources/resource-resolver');
@@ -66,6 +67,9 @@ class HTLRender {
         global = {
             ...global,
             ...this.bindings.provide(componentResource, global),
+            provider: function (absPath) {
+                return Model.make(absPath);
+            },
         };
 
         return await this._rendFile(componentHtmlFile, global);
@@ -106,9 +110,14 @@ class HTLRender {
      * @returns {Compiler} compiler
      */
     _getCompiler(resourceType) {
-        const runtimeVars = ['resource', 'properties', 'wcmmode', 'resourceResolver', 'pageProperties'].concat(
-            this.bindings.names
-        );
+        const runtimeVars = [
+            'resource',
+            'properties',
+            'wcmmode',
+            'resourceResolver',
+            'pageProperties',
+            'provider',
+        ].concat(this.bindings.names);
 
         return new Compiler()
             .withScriptResolver(this._makeScriptResolver(resourceType))
@@ -152,7 +161,9 @@ class HTLRender {
 
             let absPath = this.htlResourceResolver.getSystemPath(res.getPath());
             return `
-                const ${varName} = (require('${path.resolve(__dirname, 'model.js')}')).make('${absPath}');
+                const ${varName} = function(){
+                    return provider('${absPath.replaceAll('\\', '\\\\')}');
+                };
             `;
         };
     }
@@ -201,6 +212,9 @@ class HTLRender {
             let globals = {
                 ...newGlobals,
                 ...this.bindings.provide(resource, newGlobals),
+                provider: function (absPath) {
+                    return Model.make(absPath);
+                },
             };
 
             const htlResource = this.htlResourceResolver.getResource(resource.getResourceType());

@@ -70,10 +70,6 @@ class Server {
         this.webpackConfig.entry = [this.webpackConfig.entry, 'webpack-hot-middleware/client?reload=true'];
         this.webpackConfig.plugins.push(new webpack.HotModuleReplacementPlugin());
         this.compiler = webpack(this.webpackConfig);
-
-        // this.compiler.hooks.done.tap('WebpackAEMServer', async (stats) => {
-        //     console.log(stats);
-        // });
     }
 
     _makeExpressServer() {
