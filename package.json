@@ -1,6 +1,6 @@
 {
     "name": "@kele23/webpack-aem-server",
-    "version": "0.2.11",
+    "version": "0.2.12",
     "description": "Webpack AEM Server",
     "main": "index.js",
     "keywords": [
