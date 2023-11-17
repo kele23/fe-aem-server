@@ -1,22 +1,30 @@
 const evtSource = new EventSource('/repoevents');
 
-async function reload(start, end) {
-    console.log(start.dataset.path);
-    const response = await fetch(start.dataset.path);
-    const text = await response.text();
+const reloader = {};
 
-    let el = start;
-    while (el) {
-        if (el == end) {
-            break;
+function reload(start, end) {
+    if (reloader[start.dataset.path]) return;
+
+    console.log('[WAS]: reload ' + start.dataset.path);
+    reloader[start.dataset.path] = setTimeout(async () => {
+        const response = await fetch(start.dataset.path);
+        const text = await response.text();
+
+        let el = start;
+        while (el) {
+            if (el == end) {
+                break;
+            }
+            const tmp = el.nextSibling;
+            el.remove();
+            el = tmp;
         }
-        const tmp = el.nextSibling;
-        el.remove();
-        el = tmp;
-    }
 
-    end.insertAdjacentHTML('beforebegin', text);
-    el.remove();
+        end.insertAdjacentHTML('beforebegin', text);
+        el.remove();
+        delete reloader[start.dataset.path];
+        console.log('[WAS]: reload complate ' + start.dataset.path);
+    }, 200);
 }
 
 evtSource.onmessage = async (event) => {
