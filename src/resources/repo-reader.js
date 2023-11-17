@@ -1,8 +1,10 @@
 const { mergeDeepToPath, deepGet } = require('../utils/utils');
 const { getData } = require('../utils/request-variables-utils');
+const { EventEmitter } = require('node:events');
 
-class RepoReader {
+class RepoReader extends EventEmitter {
     constructor(basePath) {
+        super();
         this.basePath = basePath;
     }
 
@@ -143,6 +145,10 @@ class RepoReader {
     // eslint-disable-next-line no-unused-vars
     async _innerGet(repoPath) {
         throw 'Method not implemented';
+    }
+
+    _changed(repoPath) {
+        this.emit('repochanged', { path: repoPath });
     }
 }
 

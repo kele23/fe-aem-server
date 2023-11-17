@@ -19,6 +19,7 @@ class Server {
     constructor(webpackConfig, serverConfig) {
         this.webpackConfig = webpackConfig;
         this.serverConfig = serverConfig;
+        this.clients = [];
 
         this._injectHotConfigurations();
 
@@ -58,6 +59,22 @@ class Server {
         this.render = new HTLRender(this.repoReadersObj, this.serverConfig.modelAlias || ['model']);
         this.proxies = serverConfig.proxies;
 
+        // handle repo readers events
+        for (const value of Object.values(crReposObj)) {
+            value.on('repochanged', (data) => {
+                const toSend = {};
+                if (!data.path.startsWith('/content')) {
+                    let rt = data.path.replace('/apps/', '');
+                    rt = rt.replace('/libs/', '');
+                    rt = rt.substring(0, rt.lastIndexOf('/'));
+                    toSend['resourceType'] = rt;
+                } else {
+                    toSend['path'] = data.path;
+                }
+                this.clients.forEach((client) => client.response.write(`data: ${JSON.stringify(toSend)}\n\n`));
+            });
+        }
+
         this._makeExpressServer();
     }
 
@@ -67,7 +84,11 @@ class Server {
     }
 
     _injectHotConfigurations() {
-        this.webpackConfig.entry = [this.webpackConfig.entry, 'webpack-hot-middleware/client?reload=true'];
+        this.webpackConfig.entry = [
+            this.webpackConfig.entry,
+            'webpack-hot-middleware/client?reload=true',
+            path.resolve(__dirname, './static/client.js'),
+        ];
         this.webpackConfig.plugins.push(new webpack.HotModuleReplacementPlugin());
         this.compiler = webpack(this.webpackConfig);
     }
@@ -91,16 +112,42 @@ class Server {
             }
         }
 
-        //middlewares
+        // middlewares
         this.app.use(webpackDevMiddleware(this.compiler, { serverSideRender: false, writeToDisk: false }));
         this.app.use(webpackHotMiddleware(this.compiler));
 
-        //resource middleware
+        // resource middleware
         this.app.use(rrMiddleware(this.repoReadersObj));
         this.app.use(rfMiddleware());
 
-        //methods
+        // source changed events
+        this.app.get('/repoevents', (req, resp) => {
+            this._handleRepoEvents(req, resp);
+        });
+
+        // methods
         this.app.get('*', mtRender(this.render));
+    }
+
+    _handleRepoEvents(request, response) {
+        const headers = {
+            'Content-Type': 'text/event-stream',
+            Connection: 'keep-alive',
+            'Cache-Control': 'no-cache',
+        };
+        response.writeHead(200, headers);
+
+        const clientId = Date.now();
+        const newClient = {
+            id: clientId,
+            response,
+        };
+
+        this.clients.push(newClient);
+        request.on('close', () => {
+            console.log(`${clientId} Connection closed`);
+            this.clients = this.clients.filter((client) => client.id !== clientId);
+        });
     }
 }
 

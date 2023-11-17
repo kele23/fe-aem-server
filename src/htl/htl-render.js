@@ -94,13 +94,11 @@ class HTLRender {
             if (!absolutePath) source = await this.htlResourceResolver.readText(filePath);
             else source = fs.readFileSync(filePath, 'utf-8');
 
-            if (wrapper) {
-                const def = {
-                    resourceType,
-                    path: global.resource.getPath(),
-                };
+            if (wrapper && global.resource.getPath().indexOf('jcr:content/') > 0) {
                 source =
-                    `<!-- cmp: ${JSON.stringify(def)} -->\n` + source + `\n<!-- end-cmp: ${JSON.stringify(def)} -->`;
+                    `<meta data-type="start" data-resource-type="${resourceType}" data-path="${global.resource.getPath()}" />\n` +
+                    source +
+                    `<meta data-type="end" data-resource-type="${resourceType}" data-path="${global.resource.getPath()}" />\n`;
             }
 
             const func = await compiler.compileToFunction(source);

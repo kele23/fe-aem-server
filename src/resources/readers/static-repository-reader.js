@@ -1,12 +1,15 @@
 const RepoReader = require('../repo-reader');
 const fs = require('fs');
 const path = require('path');
+const chokidar = require('chokidar');
 
 class StaticRepositoryReader extends RepoReader {
     constructor(basePath, repoDir, options) {
         super(basePath);
         this.sourceDir = repoDir;
         this.options = options || {};
+
+        this._addFsListener();
     }
 
     get(repoPath, ctx) {
@@ -106,6 +109,13 @@ class StaticRepositoryReader extends RepoReader {
                 return fs.readFileSync(filePath, 'utf-8');
             }
             return 'null';
+        });
+    }
+
+    _addFsListener() {
+        chokidar.watch(this.sourceDir).on('change', (path) => {
+            const finalPath = path.replace(this.sourceDir, '');
+            this._changed(finalPath);
         });
     }
 }
