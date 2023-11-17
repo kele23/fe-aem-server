@@ -72,7 +72,7 @@ class HTLRender {
             },
         };
 
-        return await this._rendFile(componentHtmlFile, global);
+        return await this._rendFile(componentHtmlFile, global, { wrapper: true });
     }
 
     /**
@@ -81,7 +81,7 @@ class HTLRender {
      * @param {Object} global
      * @returns {string} HTML
      */
-    async _rendFile(filePath, global, absolutePath = false) {
+    async _rendFile(filePath, global, { wrapper = false, absolutePath = false }) {
         const resourceType = global.resource.getResourceType();
 
         const compiler = this._getCompiler(resourceType);
@@ -93,6 +93,16 @@ class HTLRender {
             let source = '';
             if (!absolutePath) source = await this.htlResourceResolver.readText(filePath);
             else source = fs.readFileSync(filePath, 'utf-8');
+
+            if (wrapper) {
+                const def = {
+                    resourceType,
+                    path: global.resource.getPath(),
+                };
+                source =
+                    `<!-- cmp: ${JSON.stringify(def)} -->\n` + source + `\n<!-- end-cmp: ${JSON.stringify(def)} -->`;
+            }
+
             const func = await compiler.compileToFunction(source);
             return await func(runtime);
         } catch (e) {
@@ -235,7 +245,7 @@ class HTLRender {
             if (!componentHtmlFile) componentHtmlFile = path.join(componentPath, `${componentName}.html`);
 
             const decoration = await this._createDecoration(resource, componentPath, options);
-            const htmlFileRender = await this._rendFile(componentHtmlFile, globals);
+            const htmlFileRender = await this._rendFile(componentHtmlFile, globals, { wrapper: true });
             return decoration.replace('$$content$$', htmlFileRender);
         };
     }
@@ -281,7 +291,7 @@ class HTLRender {
         return async (runtime, file) => {
             const absFile = path.resolve(file);
             const globals = runtime.globals;
-            return await this._rendFile(absFile, globals, true);
+            return await this._rendFile(absFile, globals, { absolutePath: true });
         };
     }
 }
