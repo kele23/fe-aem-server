@@ -56,7 +56,10 @@ class Server {
 
         //create render and resource resolver
         this.repoReadersObj = crReposObj;
-        this.render = new HTLRender(this.repoReadersObj, this.serverConfig.modelAlias || ['model']);
+        this.render = new HTLRender(this.repoReadersObj, {
+            modelAlias: this.serverConfig.modelAlias || ['model'],
+            hotComponents: serverConfig.hotComponents,
+        });
         this.proxies = serverConfig.proxies;
 
         // handle repo readers events
@@ -75,11 +78,10 @@ class Server {
     }
 
     _injectHotConfigurations() {
-        this.webpackConfig.entry = [
-            this.webpackConfig.entry,
-            'webpack-hot-middleware/client?reload=true',
-            path.resolve(__dirname, './static/client.js'),
-        ];
+        this.webpackConfig.entry = [this.webpackConfig.entry, 'webpack-hot-middleware/client?reload=true'];
+        if (this.serverConfig.hotComponents) {
+            this.webpackConfig.entry.push(path.resolve(__dirname, './static/client.js'));
+        }
         this.webpackConfig.plugins.push(new webpack.HotModuleReplacementPlugin());
         this.compiler = webpack(this.webpackConfig);
     }

@@ -2,6 +2,7 @@ const path = require('path');
 const src = path.resolve(__dirname, '.');
 
 module.exports = {
+    hotComponents: true,
     codeRepo: path.resolve(src, 'repository'),
     contentRepos: [
         {

@@ -12,9 +12,10 @@ class HTLRender {
      * @param {BindingsProvider} bindings The BindingsPro
      * @param {Object} options Compilation options
      */
-    constructor(repoReaders, modelAlias) {
+    constructor(repoReaders, { modelAlias, hotComponents }) {
         this.htlResourceResolver = new ResourceResolver(repoReaders);
         this.bindings = new BindingsProvider({}, modelAlias, this.htlResourceResolver);
+        this.hotComponents = hotComponents;
     }
 
     /**
@@ -106,8 +107,8 @@ class HTLRender {
             const func = await compiler.compileToFunction(source);
             let result = await func(runtime);
 
-            // add wrapper
-            if (wrapper && global.resource.getPath().indexOf('jcr:content/') > 0) {
+            // add wrapper for hot components
+            if (this.hotComponents && wrapper && global.resource.getPath().indexOf('jcr:content/') > 0) {
                 result =
                     `<meta data-type="start" data-path="${global.resource.getPath()}"/>\n` +
                     result +
