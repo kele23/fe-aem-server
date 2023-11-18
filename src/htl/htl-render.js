@@ -50,9 +50,9 @@ class HTLRender {
 
         // set page properties
         let pageProperties = null;
-        if (componentResource.getResourceType() == 'cq/page') {
-            pageProperties = componentResource.getChild('jcr:content').getValueMap();
-        }
+        let current = componentResource;
+        while (current != null && current.getResourceType() != 'cq/page') current = current.getParent();
+        if (current != null) pageProperties = current.getChild('jcr:content').getValueMap();
 
         // set global properties
         let global = {
@@ -62,6 +62,7 @@ class HTLRender {
             properties: componentResource.getValueMap(),
             pageProperties,
             request: request,
+            usedFiles: [],
         };
 
         global = {
@@ -81,28 +82,39 @@ class HTLRender {
      * @param {Object} global
      * @returns {string} HTML
      */
-    async _rendFile(filePath, global, { wrapper = false, absolutePath = false }) {
+    async _rendFile(filePath, global, { wrapper = false, absolutePath = false, decoration = null }) {
         const resourceType = global.resource.getResourceType();
 
-        const compiler = this._getCompiler(resourceType);
+        const compiler = this._getCompiler(resourceType, global);
         const runtime = new Runtime()
             .withResourceLoader(this._makeResourceLoader())
             .withIncludeHandler(this._makeIncludeHandler())
             .setGlobal(global);
         try {
             let source = '';
-            if (!absolutePath) source = await this.htlResourceResolver.readText(filePath);
-            else source = fs.readFileSync(filePath, 'utf-8');
+            if (!absolutePath) {
+                global.usedFiles.push(filePath);
+                source = await this.htlResourceResolver.readText(filePath);
+            } else source = fs.readFileSync(filePath, 'utf-8');
 
-            if (wrapper && global.resource.getPath().indexOf('jcr:content/') > 0) {
+            if (decoration) {
+                const { tagName, classes, otherAttributes } = decoration;
                 source =
-                    `<meta data-type="start" data-resource-type="${resourceType}" data-path="${global.resource.getPath()}" />\n` +
-                    source +
-                    `<meta data-type="end" data-resource-type="${resourceType}" data-path="${global.resource.getPath()}" />\n`;
+                    `<${tagName} class="${classes.join(' ')}" ${otherAttributes.join(' ')}>` + source + `</${tagName}>`;
             }
 
             const func = await compiler.compileToFunction(source);
-            return await func(runtime);
+            let result = await func(runtime);
+
+            // add wrapper
+            if (wrapper && global.resource.getPath().indexOf('jcr:content/') > 0) {
+                result =
+                    `<meta data-type="start" data-path="${global.resource.getPath()}"/>\n` +
+                    result +
+                    `<meta data-type="end" data-decoration="${!!decoration}" data-resource-type="${resourceType}" 
+                        data-path="${global.resource.getPath()}" data-usedfiles="${global.usedFiles.join(';')}" />\n`;
+            }
+            return result;
         } catch (e) {
             logger.warn(`Cannot run file ${filePath} for resource ${global.resource.getPath()}`);
             logger.warn(`>> ${e.message} -- ${e.stack}`);
@@ -117,7 +129,7 @@ class HTLRender {
      * @param {string} resourceType
      * @returns {Compiler} compiler
      */
-    _getCompiler(resourceType) {
+    _getCompiler(resourceType, global) {
         const runtimeVars = [
             'resource',
             'properties',
@@ -128,8 +140,8 @@ class HTLRender {
         ].concat(this.bindings.names);
 
         return new Compiler()
-            .withScriptResolver(this._makeScriptResolver(resourceType))
-            .withModuleImportGenerator(this._makeModuleImportGenerator(resourceType))
+            .withScriptResolver(this._makeScriptResolver(resourceType, global))
+            .withModuleImportGenerator(this._makeModuleImportGenerator(resourceType, global))
             .withRuntimeVar(runtimeVars);
     }
 
@@ -139,7 +151,7 @@ class HTLRender {
      * @param {string} resourceType
      * @returns {(baseDir, uri) => string} The resolve script
      */
-    _makeScriptResolver(resourceType) {
+    _makeScriptResolver(resourceType, global) {
         return (baseDir, uri) => {
             let res = this.htlResourceResolver.getResource(uri);
             if (!res) res = this.htlResourceResolver.getResource(path.join(resourceType, uri));
@@ -147,6 +159,10 @@ class HTLRender {
             if (!res) res = this.htlResourceResolver.getResource(path.join(resourceType, baseDir, uri));
 
             if (res) {
+                // add file to global used
+                global.usedFiles.push(res.getPath());
+
+                // run
                 const componentPath = this.htlResourceResolver.getSystemPath(res.getPath());
                 if (!componentPath) return null;
                 return componentPath;
@@ -162,11 +178,15 @@ class HTLRender {
      * @returns {(baseDir, varName, moduleId) => string} The module import function
      */
     // eslint-disable-next-line no-unused-vars
-    _makeModuleImportGenerator(resourceType) {
+    _makeModuleImportGenerator(resourceType, global) {
         return (baseDir, varName, moduleId) => {
             const res = this.htlResourceResolver.getResource(path.join(resourceType, baseDir, moduleId));
             if (!res) return null;
 
+            // add file to global used
+            global.usedFiles.push(res.getPath());
+
+            // run
             let absPath = this.htlResourceResolver.getSystemPath(res.getPath());
             return `
                 const ${varName} = function(){
@@ -215,6 +235,7 @@ class HTLRender {
                 resource: resource,
                 properties: resource.getValueMap(),
                 request: parentGlobals.request,
+                usedFiles: [],
             };
 
             let globals = {
@@ -243,13 +264,12 @@ class HTLRender {
             if (!componentHtmlFile) componentHtmlFile = path.join(componentPath, `${componentName}.html`);
 
             const decoration = await this._createDecoration(resource, componentPath, options);
-            const htmlFileRender = await this._rendFile(componentHtmlFile, globals, { wrapper: true });
-            return decoration.replace('$$content$$', htmlFileRender);
+            return await this._rendFile(componentHtmlFile, globals, { wrapper: true, decoration });
         };
     }
 
     async _createDecoration(resource, componentPath, options) {
-        if (!('decoration' in options) || !options.decoration) return '$$content$$';
+        if (!('decoration' in options) || !options.decoration) return null;
 
         const cmpNameSplit = resource.getResourceType().split('/');
 
@@ -276,7 +296,11 @@ class HTLRender {
         // extra classes from data-sly-resource
         if (options.cssClassName) classes = [...classes, ...options.cssClassName.split(' ')];
 
-        return `<${tagName} class="${classes.join(' ')}" ${otherAttributes.join(' ')}>$$content$$</${tagName}>`;
+        return {
+            tagName,
+            classes,
+            otherAttributes,
+        };
     }
 
     /**

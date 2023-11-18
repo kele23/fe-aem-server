@@ -1,9 +1,9 @@
 <sly data-sly-use.model="@hero-model.js"></sly>
 <sly data-sly-use.t2="../../../templates/t2-dropdownfield/t2-dropdownfield.html"></sly>
 
-<div id="$id['hero']" class="" x-title="c1-hero" x-data>
-    <div class="hero-content text-center">
-        <div class="max-w-md">
+<div id="$id['hero']" class="" x-title="c1-hero" x-data x-init="console.log('I\'m being initialized!')">
+    <div class="hero-content text-center"> 
+        <div class="max-w-md"> 
             <h1 class="text-5xl font-bold">${model.title}</h1>
             <div class="py-6 prose">${model.text @ context='html'}</div>
             <sly data-sly-test.link="${model.link}">

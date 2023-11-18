@@ -9,7 +9,7 @@ use(['../../../../_models/@link.js'], function (link) {
         dropdownLabel: 'Select',
         dropdownItems: [
             {
-                label: 'Test1',
+                label: 'Test2',
             },
         ],
     };

@@ -8,9 +8,17 @@ function reload(start, end) {
     console.log('[WAS]: reload ' + start.dataset.path);
     reloader[start.dataset.path] = setTimeout(async () => {
         const response = await fetch(start.dataset.path);
-        const text = await response.text();
+        let source = await response.text();
 
-        let el = start;
+        // make decoration
+        let decoration = null;
+        if (end.dataset.decoration) {
+            const next = start.nextElementSibling;
+            decoration = next.cloneNode(false);
+        }
+
+        // remove all beetween start and end
+        let el = start.nextSibling;
         while (el) {
             if (el == end) {
                 break;
@@ -20,8 +28,17 @@ function reload(start, end) {
             el = tmp;
         }
 
-        end.insertAdjacentHTML('beforebegin', text);
-        el.remove();
+        // remove new meta
+        source = source.replace(/<meta[^>]+\/>/g, '');
+
+        // create decoration html
+        if (decoration) {
+            decoration.innerHTML = source;
+            source = decoration.outerHTML;
+        }
+
+        // insert new html
+        end.insertAdjacentHTML('beforebegin', source);
         delete reloader[start.dataset.path];
         console.log('[WAS]: reload complate ' + start.dataset.path);
     }, 200);
@@ -29,31 +46,17 @@ function reload(start, end) {
 
 evtSource.onmessage = async (event) => {
     const data = JSON.parse(event.data);
-    console.log(data);
+    if (!data.path) return;
 
-    // resource type
-    if (data.resourceType) {
-        const starts = Array.from(
-            document.querySelectorAll(`meta[data-type="start"][data-resource-type="${data.resourceType}"]`)
-        );
-        for (const start of starts) {
-            const end = document.querySelector(`meta[data-type="end"][data-path="${start.dataset.path}"]`);
-            await reload(start, end);
-        }
-
-        if (!starts) {
-            window.location.reload();
-        }
+    const ends = document.querySelectorAll(
+        `meta[data-type="end"][data-path="${data.path}"], meta[data-type="end"][data-usedfiles*="${data.path}"]`
+    );
+    for (const end of ends) {
+        const realPath = end.dataset.path;
+        const start = document.querySelector(`meta[data-type="start"][data-path="${realPath}"]`);
+        await reload(start, end);
     }
-
-    // path
-    if (data.path) {
-        const start = document.querySelector(`meta[data-type="start"][data-path="${data.path}"]`);
-        const end = document.querySelector(`meta[data-type="end"][data-path="${data.path}"]`);
-        if (start && end) {
-            await reload(start, end);
-        } else {
-            window.location.reload();
-        }
+    if (!ends || ends.length <= 0) {
+        window.location.reload();
     }
 };

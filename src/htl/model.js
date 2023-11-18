@@ -9,15 +9,12 @@ class Model {
     }
 
     use(globals) {
-
         if (!fs.existsSync(this.mpath)) {
             logger.warn(`Cannot find model with path: ${this.mpath}`);
             return {};
         }
 
-
         try {
-       
             const vmContext = vm.createContext({
                 use: (deps = [], fn = null) => {
                     //deps could be the fn
@@ -42,7 +39,6 @@ class Model {
                 __dirname,
             });
 
-       
             const source = fs.readFileSync(this.mpath, { encoding: 'utf-8' });
             const vmScript = new vm.Script(source);
             return vmScript.runInContext(vmContext);

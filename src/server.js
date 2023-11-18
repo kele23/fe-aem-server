@@ -62,16 +62,7 @@ class Server {
         // handle repo readers events
         for (const value of Object.values(crReposObj)) {
             value.on('repochanged', (data) => {
-                const toSend = {};
-                if (!data.path.startsWith('/content')) {
-                    let rt = data.path.replace('/apps/', '');
-                    rt = rt.replace('/libs/', '');
-                    rt = rt.substring(0, rt.lastIndexOf('/'));
-                    toSend['resourceType'] = rt;
-                } else {
-                    toSend['path'] = data.path;
-                }
-                this.clients.forEach((client) => client.response.write(`data: ${JSON.stringify(toSend)}\n\n`));
+                this.clients.forEach((client) => client.response.write(`data: ${JSON.stringify(data)}\n\n`));
             });
         }
 

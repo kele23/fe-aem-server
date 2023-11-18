@@ -12,7 +12,7 @@
                 "c1-hero": {
                     "sling:resourceType": "test/components/content/c1-hero",
                     "usePageTitle": true,
-                    "text": "<p>Text</p>",
+                    "text": "<p>TTT</p>",
                     "link": "##REF:../../../_partials/basic-link.json"
                 }
             },
