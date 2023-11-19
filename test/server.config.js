@@ -33,5 +33,5 @@ module.exports = {
             logLevel: 'debug',
         },
     ],
-    //modelAlias: ['model'],
+    modelAlias: ['model'],
 };
