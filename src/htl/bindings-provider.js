@@ -1,5 +1,5 @@
 const Model = require('./model');
-const path = require('path');
+const path = require('path').posix; // only forward slash
 
 class BindingsProvider {
     /**

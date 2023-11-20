@@ -113,9 +113,9 @@ class StaticRepositoryReader extends RepoReader {
     }
 
     _addFsListener() {
-        chokidar.watch(this.sourceDir).on('change', (path) => {
-            console.log(path);
-            const finalPath = path.replace(this.sourceDir, '');
+        chokidar.watch(this.sourceDir).on('change', (sourcePath) => {
+            const tmpPath = sourcePath.replace(this.sourceDir, '');
+            const finalPath = tmpPath.split(path.sep).join(path.posix.sep);
             this._changed(finalPath);
         });
     }
