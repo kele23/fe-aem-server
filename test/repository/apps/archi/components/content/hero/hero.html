@@ -6,6 +6,9 @@
         <div class="max-w-md px-4">
             <h1 class="mb-5 text-5xl font-bold">${properties.title}</h1>
             <p class="mb-5">${properties.description}</p>
+            <sly data-sly-test.link="${heroModel.link}">
+                <a class="btn btn-primary" data-sly-attribute="${link.attrs}">${link.label}</a>
+            </sly>
         </div>
     </div>
 </div>

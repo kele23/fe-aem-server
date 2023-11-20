@@ -21,15 +21,17 @@ class StaticRepositoryReader extends RepoReader {
             basePath = repoPath.substring(0, repoPath.indexOf('jcr:content') - 1);
         }
 
+        const systemPath = basePath.split(path.posix.sep).join(path.sep);
+
         //json extension
-        let finalPath = this.sourceDir + basePath + '.json';
+        let finalPath = this.sourceDir + systemPath + '.json';
         let binaryFile = false;
         if (!fs.existsSync(finalPath)) {
             //folder and json extension
-            finalPath = this.sourceDir + basePath + '/index.json';
+            finalPath = this.sourceDir + systemPath + path.sep + 'index.json';
             if (!fs.existsSync(finalPath)) {
                 //take as binary file
-                finalPath = this.sourceDir + basePath;
+                finalPath = this.sourceDir + systemPath;
                 binaryFile = true;
                 if (!fs.existsSync(finalPath)) {
                     return null;
@@ -53,9 +55,9 @@ class StaticRepositoryReader extends RepoReader {
             };
 
             // read sibling items
-            if (fs.existsSync(this.sourceDir + basePath) && fs.statSync(this.sourceDir + basePath).isDirectory()) {
+            if (fs.existsSync(this.sourceDir + systemPath) && fs.statSync(this.sourceDir + systemPath).isDirectory()) {
                 const names = fs
-                    .readdirSync(this.sourceDir + basePath, { withFileTypes: true })
+                    .readdirSync(this.sourceDir + systemPath, { withFileTypes: true })
                     .map((dirent) => dirent.name)
                     .filter((name) => name != 'index.json')
                     .map((name) => (name.endsWith('.json') ? name.substring(0, name.indexOf('.json')) : name));

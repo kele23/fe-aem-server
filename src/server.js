@@ -109,14 +109,14 @@ class Server {
         this.app.use(webpackDevMiddleware(this.compiler, { serverSideRender: false, writeToDisk: false }));
         this.app.use(webpackHotMiddleware(this.compiler));
 
-        // resource middleware
-        this.app.use(rrMiddleware(this.repoReadersObj));
-        this.app.use(rfMiddleware());
-
         // source changed events
         this.app.get('/repoevents', (req, resp) => {
             this._handleRepoEvents(req, resp);
         });
+
+        // resource middleware
+        this.app.use(rrMiddleware(this.repoReadersObj));
+        this.app.use(rfMiddleware());
 
         // methods
         this.app.get('*', mtRender(this.render));
