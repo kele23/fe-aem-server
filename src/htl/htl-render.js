@@ -181,8 +181,27 @@ class HTLRender {
     // eslint-disable-next-line no-unused-vars
     _makeModuleImportGenerator(resourceType, global) {
         return (baseDir, varName, moduleId) => {
-            const res = this.htlResourceResolver.getResource(path.join(resourceType, baseDir, moduleId));
-            if (!res) return null;
+            let join = path.join(resourceType, baseDir, moduleId);
+
+            // first on current resourceType folder
+            let res = this.htlResourceResolver.getResource(join);
+
+            // second on current resource type folder + js
+            if (!res) {
+                join = join.concat('.js');
+                res = this.htlResourceResolver.getResource(join);
+            }
+
+            // thrid on models folder + js
+            if (!res) {
+                join = `/_models/${moduleId}.js`;
+                res = this.htlResourceResolver.getResource(join);
+            }
+
+            if (!res) {
+                logger.warn('Cannot find module {}', moduleId);
+                return null;
+            }
 
             // add file to global used
             global.usedFiles.push(res.getPath());
