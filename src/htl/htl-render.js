@@ -192,10 +192,10 @@ class HTLRender {
                 res = this.htlResourceResolver.getResource(join);
             }
 
-            // thrid on models folder + js
+            // third on models folder + js
             if (!res) {
-                join = `/_models/${moduleId}.js`;
-                res = this.htlResourceResolver.getResource(join);
+                join = `_models/${moduleId}.js`;
+                res = this.htlResourceResolver.resolve(join);
             }
 
             if (!res) {
