@@ -1,4 +1,4 @@
-# Webpack AEM Server
+# FE AEM Server
 
 An nodeJS express server created to develop HTL AEM components directly on the frontend.
 
