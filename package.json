@@ -1,7 +1,7 @@
 {
-    "name": "@kele23/webpack-aem-server",
+    "name": "@kele23/fe-aem-server",
     "version": "0.3.5",
-    "description": "Webpack AEM Server",
+    "description": "FE AEM Server",
     "main": "index.js",
     "keywords": [
         "webpack",
@@ -11,7 +11,7 @@
         "htl",
         "express"
     ],
-    "repository": "https://github.com/kele23/webpack-aem-server",
+    "repository": "https://github.com/kele23/fe-aem-server",
     "scripts": {
         "test-vite": "node cli.js --vite-config test-vite/vite.config.mjs --server-config test-vite/server.config.js",
         "test-webpack": "node cli.js --webpack-config test-webpack/webpack.config.js --server-config test-webpack/server.config.js"
@@ -19,7 +19,7 @@
     "author": "Michele Scala <scala233@gmail.com>",
     "license": "MIT",
     "bin": {
-        "webpack-aem-server": "./cli.js"
+        "fe-aem-server": "./cli.js"
     },
     "peerDependencies": {
         "webpack": "^5.68.0",
