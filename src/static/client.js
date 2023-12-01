@@ -47,6 +47,7 @@ function reload(start, end) {
 evtSource.onmessage = async (event) => {
     const data = JSON.parse(event.data);
     if (!data.path) return;
+    if (!data.path.endsWith('.html')) return;
 
     const ends = document.querySelectorAll(
         `meta[data-type="end"][data-path="${data.path}"], meta[data-type="end"][data-usedfiles*="${data.path}"]`
