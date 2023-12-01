@@ -3,32 +3,48 @@
 const fs = require('fs');
 const path = require('path');
 const yargs = require('yargs/yargs');
-const Server = require('./src/server');
 const { hideBin } = require('yargs/helpers');
+const { exit } = require('process');
 
 /// YARGS
 const argv = yargs(hideBin(process.argv)).argv;
-if (!argv['webpack-config']) {
-    console.error('Please provide webpack configuration');
+if (!argv['webpack-config'] && !argv['vite-config']) {
+    console.error('Please provide webpack or vite configuration');
 }
 if (!argv['server-config']) {
     console.error('Please provide server configuration');
 }
 
 /// CONFIGS
-const webpackConfigPath = path.resolve(argv['webpack-config']);
-if (!fs.existsSync(webpackConfigPath)) {
-    console.error('Please provide a valid configuration');
-}
-
 const serverConfigPath = path.resolve(argv['server-config']);
 if (!fs.existsSync(serverConfigPath)) {
     console.error('Please provide a valid configuration');
+    exit(1);
 }
-
-const webpackConfig = require(webpackConfigPath);
 const serverConfig = require(serverConfigPath);
 
+// vite or webpack
+let server = null;
+if (argv['webpack-config']) {
+    const webpackConfigPath = path.resolve(argv['webpack-config']);
+    if (!fs.existsSync(webpackConfigPath)) {
+        console.error('Please provide a valid webpack configuration');
+        exit(1);
+    }
+
+    const webpackConfig = require(webpackConfigPath);
+    const WebpackServer = require('./src/webpack');
+    server = new WebpackServer(webpackConfig, serverConfig);
+} else {
+    const viteConfigPath = path.resolve(argv['vite-config']);
+    if (!fs.existsSync(viteConfigPath)) {
+        console.error('Please provide a valid vite configuration');
+        exit(1);
+    }
+
+    const ViteServer = require('./src/vite');
+    server = new ViteServer(viteConfigPath, serverConfig);
+}
+
 //run all
-const server = new Server(webpackConfig, serverConfig);
 server.start();

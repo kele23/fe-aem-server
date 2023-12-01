@@ -29,6 +29,8 @@ const rfMiddleware = () => {
             parse = path.parse(ph);
         }
 
+        if (ph.startsWith('//')) ph = ph.substring(1);
+
         addData(req, 'requestedSelectors', selectors);
         addData(req, 'requestedSuffix', suffix);
         addData(req, 'requestedPath', ph);

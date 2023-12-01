@@ -1,5 +1,5 @@
 module.exports = {
-    content: ['./test/repository/**/*.{html,js}'],
+    content: ['./test-vite/repository/**/*.{html,js}'],
     theme: {
         extend: {},
     },

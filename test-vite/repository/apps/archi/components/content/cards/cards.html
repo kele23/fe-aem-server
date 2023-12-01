@@ -1,0 +1,7 @@
+<sly data-sly-use.card="./single-card.html"></sly>
+
+<div class="container mx-auto px-4"> sss
+    <div class="flex gap-4" data-sly-list="${model.cards}">
+        <sly data-sly-call="${card.render @ image=item.image, title=item.title, description=item.description}"></sly> 
+    </div>
+</div>

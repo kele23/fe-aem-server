@@ -1,0 +1,14 @@
+<sly data-sly-use.heroModel="@hero-model.js"></sly>
+
+<div class="hero h-96" style="background-image: url(${heroModel.bgImage})">
+    <div class="hero-overlay bg-opacity-60"></div>    
+    <div class="hero-content text-center text-neutral-content">
+        <div class="max-w-md px-4">
+            <h1 class="mb-5 text-5xl font-bold">${properties.title}</h1>
+            <p class="mb-5">${properties.description}</p>
+            <sly data-sly-test.link="${heroModel.link}">
+                <a class="btn btn-primary" data-sly-attribute="${link.attrs}">${link.label}</a>
+            </sly>
+        </div>
+    </div>
+</div>

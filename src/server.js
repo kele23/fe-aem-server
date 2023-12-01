@@ -1,12 +1,9 @@
 /* eslint-disable indent */
 const express = require('express');
-const webpack = require('webpack');
-const webpackDevMiddleware = require('webpack-dev-middleware');
 const HTLRender = require('./htl/htl-render');
 const StaticRepositoryReader = require('./resources/readers/static-repository-reader');
 const logger = require('./utils/logger');
 const httpLoggerMiddleware = require('./middleware/http-logger-middleware');
-const webpackHotMiddleware = require('webpack-hot-middleware');
 const rfMiddleware = require('./middleware/resource-founder-middleware');
 const AemRemoteRepositoryReader = require('./resources/readers/aem-remote-repository-reader');
 const mtRender = require('./methods/render-get-method');
@@ -16,12 +13,9 @@ const rrMiddleware = require('./middleware/resource-resolver-middleware');
 const path = require('path');
 
 class Server {
-    constructor(webpackConfig, serverConfig) {
-        this.webpackConfig = webpackConfig;
+    constructor(serverConfig) {
         this.serverConfig = serverConfig;
         this.clients = [];
-
-        this._injectHotConfigurations();
 
         if (!serverConfig.contentRepos) {
             throw 'Missing content repos, please define at least one content repo';
@@ -68,29 +62,19 @@ class Server {
                 this.clients.forEach((client) => client.response.write(`data: ${JSON.stringify(data)}\n\n`));
             });
         }
-
-        this._makeExpressServer();
     }
 
-    start() {
+    async start() {
+        this.app = await this._makeExpressServer();
         this.app.listen(3000);
         logger.info('Server started with port 3000');
     }
 
-    _injectHotConfigurations() {
-        this.webpackConfig.entry = [this.webpackConfig.entry, 'webpack-hot-middleware/client?reload=true'];
-        if (this.serverConfig.hotComponents) {
-            this.webpackConfig.entry.push(path.resolve(__dirname, './static/client.js'));
-        }
-        this.webpackConfig.plugins.push(new webpack.HotModuleReplacementPlugin());
-        this.compiler = webpack(this.webpackConfig);
-    }
-
-    _makeExpressServer() {
-        this.app = new express();
+    async _makeExpressServer() {
+        const app = new express();
 
         //logging middleware
-        this.app.use(httpLoggerMiddleware);
+        app.use(httpLoggerMiddleware);
 
         //proxy
         if (this.proxies) {
@@ -101,26 +85,32 @@ class Server {
                         return Logger;
                     },
                 };
-                this.app.use(proxy.middlewarePath, createProxyMiddleware(options));
+                app.use(proxy.middlewarePath, createProxyMiddleware(options));
             }
         }
 
-        // middlewares
-        this.app.use(webpackDevMiddleware(this.compiler, { serverSideRender: false, writeToDisk: false }));
-        this.app.use(webpackHotMiddleware(this.compiler));
+        if (this.serverConfig.hotComponents) {
+            app.get('/repoevents', (req, resp) => {
+                this._handleRepoEvents(req, resp);
+            });
+            app.get('/htlHotClient.js', (req, res) => {
+                res.sendFile(path.resolve(__dirname, './static/client.js'));
+            });
+        }
 
-        // source changed events
-        this.app.get('/repoevents', (req, resp) => {
-            this._handleRepoEvents(req, resp);
-        });
+        await this._addCustomMiddlewares(app);
 
         // resource middleware
-        this.app.use(rrMiddleware(this.repoReadersObj));
-        this.app.use(rfMiddleware());
+        app.use(rrMiddleware(this.repoReadersObj));
+        app.use(rfMiddleware());
 
         // methods
-        this.app.get('*', mtRender(this.render));
+        app.get('*', mtRender(this.render));
+
+        return app;
     }
+
+    _addCustomMiddlewares() {}
 
     _handleRepoEvents(request, response) {
         const headers = {

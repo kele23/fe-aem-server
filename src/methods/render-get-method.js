@@ -4,7 +4,8 @@ const mtRender = (render) => {
     return async (req, res) => {
         const resource = getData(req, 'requestedResource');
         const selectors = getData(req, 'requestedSelectors');
-        if (resource == null) {
+
+        if (resource.getResourceType() == 'sling:nonexisting') {
             res.status(404);
             res.send('NOT FOUND!');
             return;
