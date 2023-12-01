@@ -2,7 +2,6 @@
 
 An nodeJS express server created to develop HTL AEM components directly on the frontend.
 
-_The project was born years ago when I only used webpack for FE, but in the future it will also be extended to FE compilation tools such as Vite._
 
 ## Why?
 
@@ -22,14 +21,14 @@ Their communication is reduced to a series of data that must pass from one to th
 
 ### How it works?
 
-The system provides a web-server on the FE side integrated directly with webpack which is used as an alternative to the classic "webpack-dev-server".
+The system provides a web-server on the FE side integrated directly with webpack/vite which is used as an alternative to the classic dev server.
 The web server simulates an AEM HTL rendering server on FE side using the @adobe/htl-engine.
 
 ## 0 - Install
 
 ```bash
-// install webpack-aem-serve
-npm install --save-dev @kele23/webpack-aem-server
+// install fe-aem-serve
+npm install --save-dev @kele23/fe-aem-server
 ```
 
 ## 1 - Structuring project
@@ -161,10 +160,11 @@ _Example of real project where "aktComponent" binding is added on AEM Side autom
 
 ## 4 - Running
 
-Running this system is easy as running the standard webpack-dev-server:
+Running this system is easy as running the standard webpack-dev-server / vite-project:
 
 ```bash
-webpack-aem-server --webpack-config conf/webpack.dev.js --server-config conf/server.config.js
+fe-aem-server --webpack-config conf/webpack.dev.js --server-config conf/server.config.js
+fe-aem-server --vite-config conf/vite.js --server-config conf/server.config.js
 ```
 
 The difference is that an additional configuration file called "server-config" must also be provided.
@@ -227,7 +227,7 @@ Not having the time to write super accurate documentation, for the moment to und
 
 ### 5 - Components HOT Reload
 
-Webpack AEM Server was built using HRM ( https://webpack.js.org/concepts/hot-module-replacement/ ) to improve and speed up FE development. In addition to that system, a very similar sistem can also be enabled for the HTML components present on the page.
+FE AEM Server was built using HRM ( https://webpack.js.org/concepts/hot-module-replacement/ and standard vite HRM ) to improve and speed up FE development. In addition to that system, a very similar sistem can also be enabled for the HTML components present on the page.
 
 By setting the `hotComponents` flag to `true`, a script will be embedded in the page which, when a resource is modified, reloads only the single component.
 This is all done by "dirtying" a little the final generated HTML code by adding meta tags to keep track of where a component ends and/or begins.
@@ -238,4 +238,4 @@ This is all done by "dirtying" a little the final generated HTML code by adding 
 
 _Is this a perfect solutions for every AEM components?_
 
-No, I don't think so. Webpack AEM server is very usefull where you have to create a standard MPA in AEM and you want to have a better FE development experience.
+No, I don't think so. FE AEM server is very usefull where you have to create a standard MPA in AEM and you want to have a better FE development experience.
