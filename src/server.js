@@ -89,6 +89,7 @@ class Server {
             }
         }
 
+        // hot reload
         if (this.serverConfig.hotComponents) {
             app.get('/repoevents', (req, resp) => {
                 this._handleRepoEvents(req, resp);
@@ -98,14 +99,13 @@ class Server {
             });
         }
 
+        // resources ( limited to content path )
+        app.use('/content*', rrMiddleware(this.repoReadersObj));
+        app.use('/content*', rfMiddleware());
+        app.get('/content*', mtRender(this.render));
+
+        // webpack / vite
         await this._addCustomMiddlewares(app);
-
-        // resource middleware
-        app.use(rrMiddleware(this.repoReadersObj));
-        app.use(rfMiddleware());
-
-        // methods
-        app.get('*', mtRender(this.render));
 
         return app;
     }

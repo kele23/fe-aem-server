@@ -28,12 +28,14 @@ class HTLRender {
         // get resource resolver
         const htlResource = this.htlResourceResolver.getResource(componentResource.getResourceType());
         if (!htlResource) {
-            return null;
+            return `<div style="color: #AD0021; padding:8px; background-color: white; border: 1px solid #AD0021;"> resource type not found: ${componentResource.getResourceType()}</div>`;
         }
 
         // get system path
         const componentPath = htlResource.getPath();
-        if (!componentPath) return null;
+        if (!componentPath) {
+            return `<div style="color: #AD0021; padding:8px; background-color: white; border: 1px solid #AD0021;"> resource type not found: ${componentResource.getResourceType()}</div>`;
+        }
 
         const componentName = path.basename(componentPath);
 
@@ -46,7 +48,7 @@ class HTLRender {
 
         // check file exists
         if (!this.htlResourceResolver.getResource(componentHtmlFile)) {
-            return null;
+            return `<div style="color: #AD0021; padding:8px; background-color: white; border: 1px solid #AD0021;"> htl render file not found: ${componentHtmlFile}</div>`;
         }
 
         // set page properties
@@ -165,7 +167,10 @@ class HTLRender {
 
                 // run
                 const componentPath = this.htlResourceResolver.getSystemPath(res.getPath());
-                if (!componentPath) return null;
+                if (!componentPath) {
+                    logger.warn('Cannot find component path ' + res.getPath());
+                    return null;
+                }
                 return componentPath;
             }
             throw new Error(`Cannot find template ${baseDir} ${uri}`);
@@ -268,11 +273,14 @@ class HTLRender {
 
             const htlResource = this.htlResourceResolver.getResource(resource.getResourceType());
             if (!htlResource) {
-                return null;
+                return `<div style="color: #AD0021; padding:8px; background-color: white; border: 1px solid #AD0021; margin: 8px;"> resource type not found: ${resource.getResourceType()}</div>`;
             }
 
+            // get system path
             const componentPath = htlResource.getPath();
-            if (!componentPath) return null;
+            if (!componentPath) {
+                return `<div style="color: #AD0021; padding:8px; background-color: white; border: 1px solid #AD0021; margin: 8px;"> resource type not found: ${resource.getResourceType()}</div>`;
+            }
 
             const componentName = path.basename(componentPath);
 

@@ -7,7 +7,6 @@ const rfMiddleware = () => {
 
         // request path
         let ph = req.baseUrl + req.path;
-        if (ph.indexOf('.html') < 0) ph += '.html'; // add html extension if not found
 
         // extract suffix
         let suffix = '';
@@ -16,9 +15,10 @@ const rfMiddleware = () => {
             ph = ph.substring(0, ph.indexOf('.html') + 5);
         }
 
-        // remove extension
+        // get extension
         let parse = path.parse(ph);
         ph = parse.dir + '/' + parse.name;
+        const ext = parse.ext;
 
         // extract selectors
         let selectors = [];
@@ -29,7 +29,11 @@ const rfMiddleware = () => {
             parse = path.parse(ph);
         }
 
+        // fix double /
         if (ph.startsWith('//')) ph = ph.substring(1);
+
+        // re-add extension if not html
+        if (ext != '.html') ph = ph + ext;
 
         addData(req, 'requestedSelectors', selectors);
         addData(req, 'requestedSuffix', suffix);
