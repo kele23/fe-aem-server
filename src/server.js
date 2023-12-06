@@ -128,7 +128,6 @@ class Server {
 
         this.clients.push(newClient);
         request.on('close', () => {
-            console.log(`${clientId} Connection closed`);
             this.clients = this.clients.filter((client) => client.id !== clientId);
         });
     }

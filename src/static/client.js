@@ -61,3 +61,9 @@ evtSource.onmessage = async (event) => {
         window.location.reload();
     }
 };
+
+// close sse on page change
+window.onbeforeunload = function () {
+    console.log('[WAS] close SSE');
+    evtSource.close();
+};
