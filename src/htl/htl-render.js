@@ -203,7 +203,7 @@ class HTLRender {
                 res = this.htlResourceResolver.resolve(join);
             }
 
-            if (!res) {
+            if (!res || res.getResourceType() == 'sling:nonexisting') {
                 logger.warn('Cannot find module {}', moduleId);
                 return null;
             }
