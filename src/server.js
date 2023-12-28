@@ -99,13 +99,13 @@ class Server {
             });
         }
 
-        // resources ( limited to content path )
-        app.use('/content*', rrMiddleware(this.repoReadersObj));
-        app.use('/content*', rfMiddleware());
-        app.get('/content*', mtRender(this.render));
-
         // webpack / vite
         await this._addCustomMiddlewares(app);
+
+        // resources ( limited to aem paths )
+        app.use('*', rrMiddleware(this.repoReadersObj));
+        app.use('*', rfMiddleware());
+        app.get('*', mtRender(this.render));
 
         return app;
     }

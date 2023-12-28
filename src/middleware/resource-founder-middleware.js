@@ -32,14 +32,18 @@ const rfMiddleware = () => {
         // fix double /
         if (ph.startsWith('//')) ph = ph.substring(1);
 
-        // re-add extension if not html
-        if (ext != '.html') ph = ph + ext;
+        // check resource with and without extension
+        let resource = resourceResolver.resolve(ph + ext);
+        if (resource.getResourceType() != 'sling:nonexisting') {
+            ph = ph + ext;
+        } else {
+            resource = resourceResolver.resolve(ph);
+        }
 
+        // add request variables
         addData(req, 'requestedSelectors', selectors);
         addData(req, 'requestedSuffix', suffix);
         addData(req, 'requestedPath', ph);
-
-        const resource = resourceResolver.resolve(ph);
         addData(req, 'requestedResource', resource);
 
         next();
