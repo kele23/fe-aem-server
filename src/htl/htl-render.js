@@ -37,16 +37,8 @@ class HTLRender {
             return `<div style="color: #AD0021; padding:8px; background-color: white; border: 1px solid #AD0021;"> resource type not found: ${componentResource.getResourceType()}</div>`;
         }
 
-        const componentName = path.basename(componentPath);
-
-        let componentHtmlFile = null;
-        if (selectors.length > 0) {
-            const selectorHtmlFile = path.join(componentPath, `${selectors.join('.')}.html`);
-            if (this.htlResourceResolver.getResource(selectorHtmlFile)) componentHtmlFile = selectorHtmlFile;
-        }
-        if (!componentHtmlFile) componentHtmlFile = path.join(componentPath, `${componentName}.html`);
-
-        // check file exists
+        // get component Html file
+        const componentHtmlFile = this._getHtmlFile(componentPath, selectors);
         if (!this.htlResourceResolver.getResource(componentHtmlFile)) {
             return `<div style="color: #AD0021; padding:8px; background-color: white; border: 1px solid #AD0021;"> htl render file not found: ${componentHtmlFile}</div>`;
         }
@@ -186,18 +178,20 @@ class HTLRender {
     // eslint-disable-next-line no-unused-vars
     _makeModuleImportGenerator(resourceType, global) {
         return (baseDir, varName, moduleId) => {
-            let join = path.join(resourceType, baseDir, moduleId);
+            let join = path.join(resourceType, baseDir);
 
             // first on current resourceType folder
-            let res = this.htlResourceResolver.getResource(join);
+            let resPath = this._getComponentResPath(join, moduleId);
+            let res = this.htlResourceResolver.getResource(resPath);
 
             // second on current resource type folder + js
             if (!res) {
-                join = join.concat('.js');
-                res = this.htlResourceResolver.getResource(join);
+                let jsModuleId = moduleId.concat('.js');
+                resPath = this._getComponentResPath(join, jsModuleId);
+                res = this.htlResourceResolver.getResource(resPath);
             }
 
-            // third on models folder + js
+            // four on models folder + js
             if (!res) {
                 join = `_models/${moduleId}.js`;
                 res = this.htlResourceResolver.resolve(join);
@@ -282,15 +276,10 @@ class HTLRender {
                 return `<div style="color: #AD0021; padding:8px; background-color: white; border: 1px solid #AD0021; margin: 8px;"> resource type not found: ${resource.getResourceType()}</div>`;
             }
 
-            const componentName = path.basename(componentPath);
-
-            let componentHtmlFile = null;
-            if (selectors.length > 0) {
-                const selectorHtmlFile = path.join(componentPath, `${selectors.join('.')}.html`);
-                if (this.htlResourceResolver.getResource(selectorHtmlFile)) componentHtmlFile = selectorHtmlFile;
+            const componentHtmlFile = this._getHtmlFile(componentPath, selectors);
+            if (!this.htlResourceResolver.getResource(componentHtmlFile)) {
+                return `<div style="color: #AD0021; padding:8px; background-color: white; border: 1px solid #AD0021;"> htl render file not found: ${componentHtmlFile}</div>`;
             }
-            if (!componentHtmlFile) componentHtmlFile = path.join(componentPath, `${componentName}.html`);
-
             const decoration = await this._createDecoration(resource, componentPath, options);
             return await this._rendFile(componentHtmlFile, globals, { wrapper: true, decoration });
         };
@@ -306,7 +295,7 @@ class HTLRender {
         let otherAttributes = [];
 
         // load htmlTag file
-        const htmlTagFile = path.join(componentPath, 'htmlTag.json');
+        const htmlTagFile = this._getComponentResPath(componentPath, 'htmlTag.json');
         if (this.htlResourceResolver.getResource(htmlTagFile)) {
             const source = await this.htlResourceResolver.readText(htmlTagFile);
             const htmlTagObj = JSON.parse(source);
@@ -343,6 +332,31 @@ class HTLRender {
             const globals = runtime.globals;
             return await this._rendFile(absFile, globals, { absolutePath: true });
         };
+    }
+
+    _getComponentResPath(componentPath, name = null) {
+        const componentName = path.basename(componentPath);
+        const resPath = path.join(componentPath, name || `${componentName}.html`);
+        if (this.htlResourceResolver.getResource(resPath)) return resPath;
+
+        const map = this.htlResourceResolver.getResource(componentPath).getValueMap();
+        const superType = map['sling:resourceSuperType'];
+        if (superType) {
+            const superRes = this.htlResourceResolver.getResource(superType);
+            return this._getComponentResPath(superRes.getPath(), name);
+        } else {
+            return resPath;
+        }
+    }
+
+    _getHtmlFile(componentPath, selectors) {
+        let componentHtmlFile = null;
+        if (selectors.length > 0) {
+            const selectorHtmlFile = this._getComponentResPath(componentPath, `${selectors.join('.')}.html`);
+            if (this.htlResourceResolver.getResource(selectorHtmlFile)) componentHtmlFile = selectorHtmlFile;
+        }
+        if (!componentHtmlFile) componentHtmlFile = this._getComponentResPath(componentPath);
+        return componentHtmlFile;
     }
 }
 

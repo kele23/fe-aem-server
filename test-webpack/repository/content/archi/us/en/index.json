@@ -37,6 +37,15 @@
                 },
                 "space3": {
                     "sling:resourceType": "archi/components/content/space"
+                },
+                "superhero": {
+                    "sling:resourceType": "archi/components/content/superhero",
+                    "title": "Super Hero",
+                    "description": "An example of using a custom model",
+                    "link": "##REF:../../../_partials/basic-link.json"
+                },
+                "space4": {
+                    "sling:resourceType": "archi/components/content/space"
                 }
             },
             "footer": {
