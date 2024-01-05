@@ -312,11 +312,11 @@ class HTLRender {
             const htmlTagObj = JSON.parse(source);
 
             tagName = htmlTagObj?.tagName ? htmlTagObj?.tagName : tagName;
-            classes = htmlTagObj?.classes ? [...htmlTagObj?.classes] : classes;
+            classes = htmlTagObj?.class ? [htmlTagObj?.class] : classes;
 
             for (const key in htmlTagObj) {
                 const value = htmlTagObj[key];
-                if (key == 'tagName' || key == 'classes') continue;
+                if (key == 'tagName' || key == 'class') continue;
                 otherAttributes.push(`${key}="${value}"`);
             }
         }
