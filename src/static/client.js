@@ -4,6 +4,9 @@ const init = function () {
     const evtSource = new EventSource('/repoevents');
     const reloader = {};
 
+    // reload timeout
+    let timeoutId = null;
+
     function reload(start, end) {
         if (reloader[start.dataset.path]) return;
 
@@ -54,13 +57,22 @@ const init = function () {
         const ends = document.querySelectorAll(
             `meta[data-type="end"][data-path="${data.path}"], meta[data-type="end"][data-usedfiles*="${data.path}"]`
         );
-        for (const end of ends) {
-            const realPath = end.dataset.path;
-            const start = document.querySelector(`meta[data-type="start"][data-path="${realPath}"]`);
-            await reload(start, end);
-        }
+
         if (!ends || ends.length <= 0) {
-            window.location.reload();
+            if (timeoutId) clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                window.location.reload();
+            }, 200);
+        } else {
+            // post message to block parent reload ( if necessary )
+            if (window.parent) window.parent.postMessage('was-iframe-found');
+
+            // reload single elements
+            for (const end of ends) {
+                const realPath = end.dataset.path;
+                const start = document.querySelector(`meta[data-type="start"][data-path="${realPath}"]`);
+                await reload(start, end);
+            }
         }
     };
 
@@ -71,8 +83,16 @@ const init = function () {
         window.removeEventListener('beforeunload', unload);
     };
 
-    // add close
+    // on unload, close sse
     window.addEventListener('beforeunload', unload);
+
+    // post message ( receive ) - block refresh timeout
+    window.addEventListener('message', (event) => {
+        if (event.data == 'was-iframe-found' && timeoutId) {
+            clearTimeout(timeoutId);
+            timeoutId = null;
+        }
+    });
 };
 
 window.addEventListener('pageshow', (event) => {
