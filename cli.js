@@ -8,9 +8,6 @@ const { exit } = require('process');
 
 /// YARGS
 const argv = yargs(hideBin(process.argv)).argv;
-if (!argv['webpack-config'] && !argv['vite-config']) {
-    console.error('Please provide webpack or vite configuration');
-}
 if (!argv['server-config']) {
     console.error('Please provide server configuration');
 }
@@ -33,17 +30,20 @@ if (argv['webpack-config']) {
     }
 
     const webpackConfig = require(webpackConfigPath);
-    const WebpackServer = require('./src/webpack');
+    const WebpackServer = require('./src/server-webpack');
     server = new WebpackServer(webpackConfig, serverConfig);
-} else {
+} else if (argv['vite-config']) {
     const viteConfigPath = path.resolve(argv['vite-config']);
     if (!fs.existsSync(viteConfigPath)) {
         console.error('Please provide a valid vite configuration');
         exit(1);
     }
 
-    const ViteServer = require('./src/vite');
+    const ViteServer = require('./src/server-vite');
     server = new ViteServer(viteConfigPath, serverConfig);
+} else {
+    const Server = require('./src/server');
+    server = new Server(serverConfig);
 }
 
 //run all

@@ -99,8 +99,25 @@ class Server {
             });
         }
 
-        // webpack / vite
+        // webpack / vite / dist files
         await this._addCustomMiddlewares(app);
+
+        // dist folder
+        if (this.serverConfig.distFolder) {
+            var options = {
+                dotfiles: 'ignore',
+                etag: false,
+                index: false,
+                maxAge: '1d',
+                redirect: false,
+                fallthrough: true,
+            };
+
+            app.use(
+                this.serverConfig.distFolder.middlewarePath || '/',
+                express.static(this.serverConfig.distFolder.path, options)
+            );
+        }
 
         // resources ( limited to aem paths )
         app.use('*', rrMiddleware(this.repoReadersObj));

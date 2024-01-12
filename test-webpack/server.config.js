@@ -33,5 +33,9 @@ module.exports = {
             logLevel: 'debug',
         },
     ],
+    distFolder: {
+        middlewarePath: '/',
+        path: path.resolve(__dirname, 'dist'),
+    },
     modelAlias: ['model'],
 };
