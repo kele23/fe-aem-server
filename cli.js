@@ -5,6 +5,7 @@ const path = require('path');
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
 const { exit } = require('process');
+const Logger = require('./src/utils/logger');
 
 /// YARGS
 const argv = yargs(hideBin(process.argv)).argv;
@@ -46,5 +47,11 @@ if (argv['webpack-config']) {
     server = new Server(serverConfig);
 }
 
-//run all
-server.start();
+//run
+(async () => {
+    try {
+        await server.start();
+    } catch (e) {
+        Logger.error(e);
+    }
+})();
