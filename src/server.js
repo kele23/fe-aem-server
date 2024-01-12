@@ -65,9 +65,10 @@ class Server {
     }
 
     async start() {
+        const port = process.env.PORT || 3000;
         this.app = await this._makeExpressServer();
-        this.app.listen(3000);
-        logger.info('Server started with port 3000');
+        this.app.listen(port);
+        logger.info(`Server started with port ${port}`);
     }
 
     async _makeExpressServer() {

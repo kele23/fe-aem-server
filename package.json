@@ -1,6 +1,6 @@
 {
     "name": "@kele23/fe-aem-server",
-    "version": "0.5.2",
+    "version": "0.5.3",
     "description": "FE AEM Server",
     "main": "index.js",
     "keywords": [
