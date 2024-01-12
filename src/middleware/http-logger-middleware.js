@@ -5,7 +5,9 @@ const Logger = require('../utils/logger');
 // Morgan to use our custom logger instead of the console.log.
 const stream = {
     // Use the http severity
-    write: (message) => Logger.http(message),
+    write: (message) => {
+        Logger.http(message.trim());
+    },
 };
 
 // Build the morgan middleware
