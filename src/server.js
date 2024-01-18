@@ -1,14 +1,14 @@
 const express = require('express');
-//const HTLRender = require('./htl/htl-render');
-//const StaticRepositoryReader = require('./resources/readers/static-repository-reader');
+const HTLRender = require('./htl/htl-render');
+const StaticRepositoryReader = require('./resources/readers/static-repository-reader');
 const httpLoggerMiddleware = require('./middleware/http-logger-middleware');
-//const rfMiddleware = require('./middleware/resource-founder-middleware');
+const rfMiddleware = require('./middleware/resource-founder-middleware');
 //const AemRemoteRepositoryReader = require('./resources/readers/aem-remote-repository-reader');
-//const mtRender = require('./methods/render-get-method');
+const mtRender = require('./methods/render-get-method');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const Logger = require('./utils/logger');
-//const rrMiddleware = require('./middleware/resource-resolver-middleware');
-//const path = require('path');
+const rrMiddleware = require('./middleware/resource-resolver-middleware');
+const path = require('path');
 
 class Server {
     constructor(serverConfig) {
@@ -19,39 +19,39 @@ class Server {
             throw 'Missing content repos, please define at least one content repo';
         }
 
-        // //make repository readers ( libs is taken from project source)
-        // serverConfig.contentRepos.push({
-        //     rootPath: '/libs',
-        //     localPath: path.resolve(__dirname, 'repository'),
-        //     type: 'file',
-        // });
+        //make repository readers ( libs is taken from project source)
+        serverConfig.contentRepos.push({
+            rootPath: '/libs',
+            localPath: path.resolve(__dirname, 'repository'),
+            type: 'file',
+        });
 
         //make readers object
         // const crReposObj = {};
 
-        // //other paths can be loaded from configuration
-        // for (let cr of serverConfig.contentRepos) {
-        //     switch (cr.type) {
-        //         case 'file':
-        //         case 'json':
-        //             crReposObj[cr.rootPath] = new StaticRepositoryReader(cr.rootPath, cr.localPath, cr.options);
-        //             break;
+        //other paths can be loaded from configuration
+        for (let cr of serverConfig.contentRepos) {
+            switch (cr.type) {
+                case 'file':
+                case 'json':
+                    crReposObj[cr.rootPath] = new StaticRepositoryReader(cr.rootPath, cr.localPath, cr.options);
+                    break;
 
-        //         case 'remote':
-        //             crReposObj[cr.rootPath] = new AemRemoteRepositoryReader(cr.rootPath, cr.aemRemote, cr.options);
-        //             break;
+                // case 'remote':
+                //     crReposObj[cr.rootPath] = new AemRemoteRepositoryReader(cr.rootPath, cr.aemRemote, cr.options);
+                //     break;
 
-        //         case 'custom':
-        //             crReposObj[cr.rootPath] = cr.reader;
-        //     }
-        // }
+                // case 'custom':
+                //     crReposObj[cr.rootPath] = cr.reader;
+            }
+        }
 
         //create render and resource resolver
         // this.repoReadersObj = crReposObj;
-        // this.render = new HTLRender(this.repoReadersObj, {
-        //     modelAlias: this.serverConfig.modelAlias || ['model'],
-        //     hotComponents: serverConfig.hotComponents,
-        // });
+        this.render = new HTLRender(this.repoReadersObj, {
+            modelAlias: this.serverConfig.modelAlias || ['model'],
+            hotComponents: serverConfig.hotComponents,
+        });
         this.proxies = serverConfig.proxies;
 
         // handle repo readers events
@@ -112,9 +112,9 @@ class Server {
         }
 
         // resources ( limited to aem paths )
-        // app.use('*', rrMiddleware(this.repoReadersObj));
-        // app.use('*', rfMiddleware());
-        // app.get('*', mtRender(this.render));
+        app.use('*', rrMiddleware(this.repoReadersObj));
+        app.use('*', rfMiddleware());
+        app.get('*', mtRender(this.render));
 
         return app;
     }
