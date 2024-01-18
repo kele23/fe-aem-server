@@ -1,11 +1,10 @@
-/* eslint-disable indent */
 const express = require('express');
-const HTLRender = require('./htl/htl-render');
+//const HTLRender = require('./htl/htl-render');
 const StaticRepositoryReader = require('./resources/readers/static-repository-reader');
 const httpLoggerMiddleware = require('./middleware/http-logger-middleware');
 const rfMiddleware = require('./middleware/resource-founder-middleware');
 const AemRemoteRepositoryReader = require('./resources/readers/aem-remote-repository-reader');
-const mtRender = require('./methods/render-get-method');
+//const mtRender = require('./methods/render-get-method');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const Logger = require('./utils/logger');
 const rrMiddleware = require('./middleware/resource-resolver-middleware');
@@ -49,10 +48,10 @@ class Server {
 
         //create render and resource resolver
         this.repoReadersObj = crReposObj;
-        this.render = new HTLRender(this.repoReadersObj, {
-            modelAlias: this.serverConfig.modelAlias || ['model'],
-            hotComponents: serverConfig.hotComponents,
-        });
+        // this.render = new HTLRender(this.repoReadersObj, {
+        //     modelAlias: this.serverConfig.modelAlias || ['model'],
+        //     hotComponents: serverConfig.hotComponents,
+        // });
         this.proxies = serverConfig.proxies;
 
         // handle repo readers events
@@ -115,7 +114,7 @@ class Server {
         // resources ( limited to aem paths )
         app.use('*', rrMiddleware(this.repoReadersObj));
         app.use('*', rfMiddleware());
-        app.get('*', mtRender(this.render));
+        // app.get('*', mtRender(this.render));
 
         return app;
     }
