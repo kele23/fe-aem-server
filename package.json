@@ -16,7 +16,8 @@
         "test-vite": "node cli.js --vite-config test-vite/vite.config.mjs --server-config test-vite/server.config.js",
         "test-webpack": "node cli.js --webpack-config test-webpack/webpack.config.js --server-config test-webpack/server.config.js",
         "test-dist": "node cli.js --server-config test-webpack/server.config.js",
-        "test-build-webpack": "webpack --config test-webpack/webpack.config.js"
+        "build": "webpack --config test-webpack/webpack.config.js",
+        "start": "node cli.js --server-config test-webpack/server.config.js"
     },
     "author": "Michele Scala <scala233@gmail.com>",
     "license": "MIT",
