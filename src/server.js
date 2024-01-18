@@ -27,7 +27,7 @@ class Server {
         });
 
         //make readers object
-        // const crReposObj = {};
+        const crReposObj = {};
 
         //other paths can be loaded from configuration
         for (let cr of serverConfig.contentRepos) {
@@ -47,7 +47,7 @@ class Server {
         }
 
         //create render and resource resolver
-        // this.repoReadersObj = crReposObj;
+        this.repoReadersObj = crReposObj;
         this.render = new HTLRender(this.repoReadersObj, {
             modelAlias: this.serverConfig.modelAlias || ['model'],
             hotComponents: serverConfig.hotComponents,
