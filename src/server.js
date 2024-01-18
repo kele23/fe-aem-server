@@ -3,7 +3,7 @@ const HTLRender = require('./htl/htl-render');
 const StaticRepositoryReader = require('./resources/readers/static-repository-reader');
 const httpLoggerMiddleware = require('./middleware/http-logger-middleware');
 const rfMiddleware = require('./middleware/resource-founder-middleware');
-//const AemRemoteRepositoryReader = require('./resources/readers/aem-remote-repository-reader');
+const AemRemoteRepositoryReader = require('./resources/readers/aem-remote-repository-reader');
 const mtRender = require('./methods/render-get-method');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const Logger = require('./utils/logger');
@@ -37,12 +37,12 @@ class Server {
                     crReposObj[cr.rootPath] = new StaticRepositoryReader(cr.rootPath, cr.localPath, cr.options);
                     break;
 
-                // case 'remote':
-                //     crReposObj[cr.rootPath] = new AemRemoteRepositoryReader(cr.rootPath, cr.aemRemote, cr.options);
-                //     break;
+                case 'remote':
+                    crReposObj[cr.rootPath] = new AemRemoteRepositoryReader(cr.rootPath, cr.aemRemote, cr.options);
+                    break;
 
-                // case 'custom':
-                //     crReposObj[cr.rootPath] = cr.reader;
+                case 'custom':
+                    crReposObj[cr.rootPath] = cr.reader;
             }
         }
 
