@@ -7,16 +7,18 @@ const { hideBin } = require('yargs/helpers');
 const { exit } = require('process');
 const Logger = require('./src/utils/logger');
 
+Logger.info('Initializing....');
+
 /// YARGS
 const argv = yargs(hideBin(process.argv)).argv;
 if (!argv['server-config']) {
-    console.error('Please provide server configuration');
+    Logger.error('Please provide server configuration');
 }
 
 /// CONFIGS
 const serverConfigPath = path.resolve(argv['server-config']);
 if (!fs.existsSync(serverConfigPath)) {
-    console.error('Please provide a valid configuration');
+    Logger.error('Please provide a valid configuration');
     exit(1);
 }
 const serverConfig = require(serverConfigPath);
@@ -26,7 +28,7 @@ let server = null;
 if (argv['webpack-config']) {
     const webpackConfigPath = path.resolve(argv['webpack-config']);
     if (!fs.existsSync(webpackConfigPath)) {
-        console.error('Please provide a valid webpack configuration');
+        Logger.error('Please provide a valid webpack configuration');
         exit(1);
     }
 
@@ -36,7 +38,7 @@ if (argv['webpack-config']) {
 } else if (argv['vite-config']) {
     const viteConfigPath = path.resolve(argv['vite-config']);
     if (!fs.existsSync(viteConfigPath)) {
-        console.error('Please provide a valid vite configuration');
+        Logger.error('Please provide a valid vite configuration');
         exit(1);
     }
 
@@ -47,11 +49,11 @@ if (argv['webpack-config']) {
     server = new Server(serverConfig);
 }
 
-//run
-(async () => {
-    try {
-        await server.start();
-    } catch (e) {
-        Logger.error(e);
-    }
-})();
+//run server
+const port = process.env.PORT || 3000;
+server.buildExpress().then((app) => {
+    Logger.info('Starting server....');
+    app.listen(port, () => {
+        Logger.info(`Started process on port ${port}`);
+    });
+});

@@ -2,7 +2,6 @@
 const express = require('express');
 const HTLRender = require('./htl/htl-render');
 const StaticRepositoryReader = require('./resources/readers/static-repository-reader');
-const logger = require('./utils/logger');
 const httpLoggerMiddleware = require('./middleware/http-logger-middleware');
 const rfMiddleware = require('./middleware/resource-founder-middleware');
 const AemRemoteRepositoryReader = require('./resources/readers/aem-remote-repository-reader');
@@ -64,14 +63,7 @@ class Server {
         }
     }
 
-    async start() {
-        const port = process.env.PORT || 3000;
-        this.app = await this._makeExpressServer();
-        this.app.listen(port);
-        logger.info(`Server started with port ${port}`);
-    }
-
-    async _makeExpressServer() {
+    async buildExpress() {
         const app = new express();
 
         //logging middleware
