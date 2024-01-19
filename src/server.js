@@ -3,7 +3,6 @@ const HTLRender = require('./htl/htl-render');
 const StaticRepositoryReader = require('./resources/readers/static-repository-reader');
 const httpLoggerMiddleware = require('./middleware/http-logger-middleware');
 const rfMiddleware = require('./middleware/resource-founder-middleware');
-//const AemRemoteRepositoryReader = require('./resources/readers/aem-remote-repository-reader');
 const mtRender = require('./methods/render-get-method');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const Logger = require('./utils/logger');
@@ -37,12 +36,8 @@ class Server {
                     crReposObj[cr.rootPath] = new StaticRepositoryReader(cr.rootPath, cr.localPath, cr.options);
                     break;
 
-                // case 'remote':
-                //     crReposObj[cr.rootPath] = new AemRemoteRepositoryReader(cr.rootPath, cr.aemRemote, cr.options);
-                //     break;
-
-                // case 'custom':
-                //     crReposObj[cr.rootPath] = cr.reader;
+                case 'custom':
+                    crReposObj[cr.rootPath] = cr.reader;
             }
         }
 
@@ -55,11 +50,13 @@ class Server {
         this.proxies = serverConfig.proxies;
 
         // handle repo readers events
-        // for (const value of Object.values(crReposObj)) {
-        //     value.on('repochanged', (data) => {
-        //         this.clients.forEach((client) => client.response.write(`data: ${JSON.stringify(data)}\n\n`));
-        //     });
-        // }
+        if (this.serverConfig.hotComponents) {
+            for (const value of Object.values(crReposObj)) {
+                value.on('repochanged', (data) => {
+                    this.clients.forEach((client) => client.response.write(`data: ${JSON.stringify(data)}\n\n`));
+                });
+            }
+        }
     }
 
     async buildExpress() {
@@ -82,17 +79,17 @@ class Server {
         }
 
         // hot reload
-        // if (this.serverConfig.hotComponents) {
-        //     app.get('/repoevents', (req, resp) => {
-        //         this._handleRepoEvents(req, resp);
-        //     });
-        //     app.get('/htlHotClient.js', (req, res) => {
-        //         res.sendFile(path.resolve(__dirname, './static/client.js'));
-        //     });
-        // }
+        if (this.serverConfig.hotComponents) {
+            app.get('/repoevents', (req, resp) => {
+                this._handleRepoEvents(req, resp);
+            });
+            app.get('/htlHotClient.js', (req, res) => {
+                res.sendFile(path.resolve(__dirname, './static/client.js'));
+            });
+        }
 
         // webpack / vite / dist files
-        // await this._addCustomMiddlewares(app);
+        await this._addCustomMiddlewares(app);
 
         // dist folder
         if (this.serverConfig.distFolder) {
@@ -119,27 +116,27 @@ class Server {
         return app;
     }
 
-    _addCustomMiddlewares() {}
+    async _addCustomMiddlewares() {}
 
-    // _handleRepoEvents(request, response) {
-    //     const headers = {
-    //         'Content-Type': 'text/event-stream',
-    //         Connection: 'keep-alive',
-    //         'Cache-Control': 'no-cache',
-    //     };
-    //     response.writeHead(200, headers);
+    _handleRepoEvents(request, response) {
+        const headers = {
+            'Content-Type': 'text/event-stream',
+            Connection: 'keep-alive',
+            'Cache-Control': 'no-cache',
+        };
+        response.writeHead(200, headers);
 
-    //     const clientId = Date.now();
-    //     const newClient = {
-    //         id: clientId,
-    //         response,
-    //     };
+        const clientId = Date.now();
+        const newClient = {
+            id: clientId,
+            response,
+        };
 
-    //     this.clients.push(newClient);
-    //     request.on('close', () => {
-    //         this.clients = this.clients.filter((client) => client.id !== clientId);
-    //     });
-    // }
+        this.clients.push(newClient);
+        request.on('close', () => {
+            this.clients = this.clients.filter((client) => client.id !== clientId);
+        });
+    }
 }
 
 module.exports = Server;
