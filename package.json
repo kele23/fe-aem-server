@@ -16,7 +16,8 @@
         "test-vite": "node cli.js --vite-config test-vite/vite.config.mjs --server-config test-vite/server.config.js",
         "test-webpack": "node cli.js --webpack-config test-webpack/webpack.config.js --server-config test-webpack/server.config.js",
         "test-dist": "node cli.js --server-config test-webpack/server.config.js",
-        "test-build-webpack": "webpack --config test-webpack/webpack.config.js"
+        "build": "webpack --config test-webpack/webpack.config.js",
+        "start": "node cli.js --server-config test-webpack/server.config.js"
     },
     "author": "Michele Scala <scala233@gmail.com>",
     "license": "MIT",
@@ -25,7 +26,9 @@
     },
     "peerDependencies": {
         "vite": "^5.0.4",
-        "webpack": "^5.68.0"
+        "webpack": "^5.68.0",
+        "webpack-dev-middleware": "^6.1.1",
+        "webpack-hot-middleware": "^2.25.4"
     },
     "dependencies": {
         "@adobe/htlengine": "^6.4.8",
@@ -33,16 +36,7 @@
         "express": "^4.17.1",
         "glob": "^7.1.6",
         "http-proxy-middleware": "^2.0.6",
-        "is-promise": "^4.0.0",
         "morgan": "^1.10.0",
-        "nanoid": "^5.0.3",
-        "node-cache": "^5.1.2",
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0",
-        "schema-utils": "^3.0.0",
-        "sync-request": "^6.1.0",
-        "webpack-dev-middleware": "^6.1.1",
-        "webpack-hot-middleware": "^2.25.4",
         "winston": "^3.7.2",
         "yargs": "^17.1.0"
     },

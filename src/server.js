@@ -1,10 +1,8 @@
-/* eslint-disable indent */
 const express = require('express');
 const HTLRender = require('./htl/htl-render');
 const StaticRepositoryReader = require('./resources/readers/static-repository-reader');
 const httpLoggerMiddleware = require('./middleware/http-logger-middleware');
 const rfMiddleware = require('./middleware/resource-founder-middleware');
-const AemRemoteRepositoryReader = require('./resources/readers/aem-remote-repository-reader');
 const mtRender = require('./methods/render-get-method');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const Logger = require('./utils/logger');
@@ -38,10 +36,6 @@ class Server {
                     crReposObj[cr.rootPath] = new StaticRepositoryReader(cr.rootPath, cr.localPath, cr.options);
                     break;
 
-                case 'remote':
-                    crReposObj[cr.rootPath] = new AemRemoteRepositoryReader(cr.rootPath, cr.aemRemote, cr.options);
-                    break;
-
                 case 'custom':
                     crReposObj[cr.rootPath] = cr.reader;
             }
@@ -56,10 +50,12 @@ class Server {
         this.proxies = serverConfig.proxies;
 
         // handle repo readers events
-        for (const value of Object.values(crReposObj)) {
-            value.on('repochanged', (data) => {
-                this.clients.forEach((client) => client.response.write(`data: ${JSON.stringify(data)}\n\n`));
-            });
+        if (this.serverConfig.hotComponents) {
+            for (const value of Object.values(crReposObj)) {
+                value.on('repochanged', (data) => {
+                    this.clients.forEach((client) => client.response.write(`data: ${JSON.stringify(data)}\n\n`));
+                });
+            }
         }
     }
 
@@ -120,7 +116,7 @@ class Server {
         return app;
     }
 
-    _addCustomMiddlewares() {}
+    async _addCustomMiddlewares() {}
 
     _handleRepoEvents(request, response) {
         const headers = {
