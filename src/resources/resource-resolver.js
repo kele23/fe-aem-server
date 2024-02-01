@@ -3,12 +3,9 @@ const path = require('path');
 const RepoReader = require('./repo-reader');
 
 class ResourceResolver {
-    constructor(repoReaders, request) {
+    constructor(repoReaders) {
         this.repoReaders = repoReaders;
         this.syntetic = {};
-        this.ctx = {
-            request,
-        };
     }
 
     /**

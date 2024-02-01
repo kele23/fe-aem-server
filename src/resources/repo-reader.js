@@ -1,6 +1,5 @@
-const { mergeDeepToPath, deepGet } = require('../utils/utils');
-const { getData } = require('../utils/request-variables-utils');
 const { EventEmitter } = require('node:events');
+const Logger = require('../utils/logger');
 
 class RepoReader extends EventEmitter {
     constructor(basePath) {
@@ -32,11 +31,10 @@ class RepoReader extends EventEmitter {
     /**
      * Returns an object from the repository if exists, and add it to the ctx object
      * @param {string} repoPath
-     * @param {Object} ctx
      * @returns {Object} the repo object
      */
     // eslint-disable-next-line no-unused-vars
-    get(repoPath, ctx) {
+    get(repoPath) {
         throw 'Please implement this method in a subclass';
     }
 
@@ -45,11 +43,10 @@ class RepoReader extends EventEmitter {
      * Resolve must return an object with finalPath ( founded resource ) and object
      * if no resources is found then non existing resource must be returned
      * @param {*} repoPath
-     * @param {*} ctx
      * @returns
      */
-    resolve(repoPath, resourceType, ctx) {
-        let content = this.get(repoPath, ctx);
+    resolve(repoPath, resourceType) {
+        let content = this.get(repoPath);
 
         //create content if not exists
         if (!content) {
@@ -73,7 +70,7 @@ class RepoReader extends EventEmitter {
      * @returns The system path
      */
     // eslint-disable-next-line no-unused-vars
-    getSystemPath(repoPath, ctx) {
+    getSystemPath(repoPath) {
         throw 'Please implement this method in a subclass';
     }
 
@@ -84,62 +81,8 @@ class RepoReader extends EventEmitter {
      * @returns The text content of the resource
      */
     // eslint-disable-next-line no-unused-vars
-    async readText(repoPath, ctx) {
+    async readText(repoPath) {
         throw 'Please implement this method in a subclass';
-    }
-
-    /**
-     * Get the object from the context
-     * @param {*} repoPath The path
-     * @param {*} ctx The ctx object
-     * @returns An object from the ctx
-     */
-    _getFromCtx(repoPath, ctx) {
-        //make context if not exists
-        if (!ctx.contents) ctx.contents = {};
-        return deepGet(ctx.contents, repoPath);
-    }
-
-    /**
-     * Return the current request query string
-     * @param {*} ctx
-     * @returns
-     */
-    _getQuery(ctx) {
-        if (!ctx.request) return {};
-        return ctx.request.query;
-    }
-
-    /**
-     * Return the current request query string
-     * @param {*} ctx
-     * @returns
-     */
-    _getSuffix(ctx) {
-        if (!ctx.request) return '';
-        return getData(ctx.request, 'requestedSuffix');
-    }
-
-    /**
-     * Return the current request query string
-     * @param {*} ctx
-     * @returns
-     */
-    _getSelectors(ctx) {
-        if (!ctx.request) return [];
-        const selectors = getData(ctx.request, 'requestedSelectors');
-        if (!selectors) return [];
-        return selectors;
-    }
-
-    /**
-     * Adds repository data to the ctx
-     * @param {*} data The repository data
-     * @param {*} basePath The basePath ( of where starts the data )
-     * @param {*} ctx The ctx
-     */
-    _addToCtx(data, basePath, ctx) {
-        ctx.contents = mergeDeepToPath(ctx.contents, data, basePath);
     }
 
     // eslint-disable-next-line no-unused-vars
@@ -148,6 +91,7 @@ class RepoReader extends EventEmitter {
     }
 
     _changed(repoPath) {
+        Logger.debug('Changed path ' + repoPath);
         this.emit('repochanged', { path: repoPath });
     }
 }

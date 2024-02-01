@@ -48,7 +48,7 @@ if (argv['webpack-config']) {
 }
 
 //run server
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || serverConfig.port || 3000;
 server.buildExpress().then((app) => {
     app.listen(port, () => {
         Logger.info(`Started process on port ${port}`);

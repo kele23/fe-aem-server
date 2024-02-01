@@ -2,53 +2,49 @@ const RepoReader = require('../repo-reader');
 const fs = require('fs');
 const path = require('path');
 const chokidar = require('chokidar');
+const { deepGet, mergeDeepToPath, objectEquals } = require('../../utils/utils');
 
 class StaticRepositoryReader extends RepoReader {
     constructor(basePath, repoDir, options) {
         super(basePath);
         this.sourceDir = repoDir;
         this.options = options || {};
+        this.ctx = {};
 
         this._addFsListener();
     }
 
-    get(repoPath, ctx) {
-        const value = this._getFromCtx(repoPath, ctx);
+    get(repoPath) {
+        const value = this._getFromCtx(repoPath);
         if (value && !value.tobecontinue) return value;
 
+        // load base path
         let basePath = repoPath;
         if (repoPath.indexOf('jcr:content') >= 0) {
             basePath = repoPath.substring(0, repoPath.indexOf('jcr:content') - 1);
         }
 
-        const systemPath = basePath.split(path.posix.sep).join(path.sep);
+        const systemPath = this.getSystemPath(repoPath);
+        if (!systemPath) return null;
 
-        //json extension
-        let finalPath = this.sourceDir + systemPath + '.json';
-        let binaryFile = false;
-        if (!fs.existsSync(finalPath)) {
-            //folder and json extension
-            finalPath = this.sourceDir + systemPath + path.sep + 'index.json';
-            if (!fs.existsSync(finalPath)) {
-                //take as binary file
-                finalPath = this.sourceDir + systemPath;
-                binaryFile = true;
-                if (!fs.existsSync(finalPath)) {
-                    return null;
-                }
-            }
-        }
+        const data = this._loadData(systemPath);
+        this._addToCtx(data, basePath);
+        return this._getFromCtx(repoPath);
+    }
+
+    _loadData(systemPath) {
+        const binaryFile = !systemPath.endsWith('.json');
 
         let data = null;
         if (binaryFile) {
             //binary file or folder
             data = {
-                'sling:resourceType': fs.statSync(finalPath).isDirectory() ? 'sling/Folder' : 'nt/file',
+                'sling:resourceType': fs.statSync(systemPath).isDirectory() ? 'sling/Folder' : 'nt/file',
                 tobecontinue: false,
             };
         } else {
             // json file ( read it )
-            const source = this._checkNesting(fs.readFileSync(finalPath, 'utf8'), finalPath);
+            const source = this._checkNesting(fs.readFileSync(systemPath, 'utf8'), systemPath);
             data = {
                 ...JSON.parse(source),
                 tobecontinue: false,
@@ -68,8 +64,7 @@ class StaticRepositoryReader extends RepoReader {
             }
         }
 
-        this._addToCtx(data, basePath, ctx);
-        return this._getFromCtx(repoPath, ctx);
+        return data;
     }
 
     getSystemPath(repoPath) {
@@ -78,20 +73,29 @@ class StaticRepositoryReader extends RepoReader {
             basePath = repoPath.substring(0, repoPath.indexOf('jcr:content') - 1);
         }
 
-        const repoSys = path.normalize(repoPath);
+        const systemPath = basePath.split(path.posix.sep).join(path.sep);
 
-        let finalPath = path.join(this.sourceDir, repoSys + '.json');
+        //json extension
+        let finalPath = this.sourceDir + systemPath + '.json';
         if (!fs.existsSync(finalPath)) {
             //folder and json extension
-            finalPath = path.join(this.sourceDir, basePath, 'index.json');
+            finalPath = this.sourceDir + systemPath + path.sep + 'index.json';
             if (!fs.existsSync(finalPath)) {
                 //take as binary file
-                finalPath = path.join(this.sourceDir, basePath);
+                finalPath = this.sourceDir + systemPath;
                 if (!fs.existsSync(finalPath)) {
                     return null;
                 }
             }
         }
+        return finalPath;
+    }
+
+    revertSystemPath(systemPath) {
+        const tmpPath = systemPath.replace(this.sourceDir, '');
+        let finalPath = tmpPath.split(path.sep).join(path.posix.sep);
+        if (finalPath.endsWith('/index.json')) finalPath = finalPath.replace('/index.json', '');
+        if (finalPath.endsWith('.json')) finalPath = finalPath.replace('.json', '');
         return finalPath;
     }
 
@@ -115,11 +119,49 @@ class StaticRepositoryReader extends RepoReader {
     }
 
     _addFsListener() {
-        chokidar.watch(this.sourceDir).on('change', (sourcePath) => {
-            const tmpPath = sourcePath.replace(this.sourceDir, '');
-            const finalPath = tmpPath.split(path.sep).join(path.posix.sep);
-            this._changed(finalPath);
+        let timeout;
+        const changes = new Set();
+        chokidar.watch(this.sourceDir).on('change', (systemPath) => {
+            if (timeout) clearTimeout(timeout);
+            changes.add(systemPath);
+
+            timeout = setTimeout(() => {
+                // iterate changes
+                for (const change of Array.from(changes)) {
+                    const repoPath = this.revertSystemPath(change);
+                    const data = this._loadData(change);
+                    const oldData = this._getFromCtx(repoPath);
+                    const changed = objectEquals(data, oldData, repoPath);
+                    this._addToCtx(data, repoPath);
+
+                    for (const ch of changed) {
+                        this._changed(ch);
+                    }
+                }
+
+                // reset changes
+                changes.clear();
+            }, 200);
         });
+    }
+
+    /**
+     * Get the object from the context
+     * @param {*} repoPath The path
+     * @param {*} ctx The ctx object
+     * @returns An object from the ctx
+     */
+    _getFromCtx(repoPath) {
+        return deepGet(this.ctx, repoPath);
+    }
+
+    /**
+     * Adds repository data to the ctx
+     * @param {*} data The repository data
+     * @param {*} basePath The basePath ( of where starts the data )
+     */
+    _addToCtx(data, basePath) {
+        this.ctx = mergeDeepToPath(this.ctx, data, basePath);
     }
 }
 

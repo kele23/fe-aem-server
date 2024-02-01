@@ -57,9 +57,43 @@ const deepGet = (obj, path) => {
     return current;
 };
 
+function countProps(obj) {
+    var count = 0;
+    for (let k in obj) {
+        // eslint-disable-next-line no-prototype-builtins
+        if (obj.hasOwnProperty(k)) {
+            count++;
+        }
+    }
+    return count;
+}
+
+function objectEquals(v1, v2, path = '') {
+    if (countProps(v1) !== countProps(v2)) {
+        return [path];
+    }
+
+    var r = [];
+    for (let k in v1) {
+        let res = [];
+        if (v1 instanceof Object && v2 instanceof Object) {
+            res = objectEquals(v1[k], v2[k], `${path}/${k}`);
+        } else {
+            if (typeof v1 !== typeof v2) {
+                res = [path];
+            } else {
+                res = v1 === v2 ? [] : [path];
+            }
+        }
+        r = [...res, ...r];
+    }
+    return r;
+}
+
 module.exports = {
     isObject,
     mergeDeep,
     mergeDeepToPath,
     deepGet,
+    objectEquals,
 };
