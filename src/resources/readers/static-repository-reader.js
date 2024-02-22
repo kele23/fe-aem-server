@@ -131,9 +131,15 @@ class StaticRepositoryReader extends RepoReader {
                     const repoPath = this.revertSystemPath(change);
                     const data = this._loadData(change);
                     const oldData = this._getFromCtx(repoPath);
-                    const changed = objectEquals(data, oldData, repoPath);
-                    this._addToCtx(data, repoPath);
 
+                    let changed = [];
+                    if (data['sling:resourceType'] == 'nt/file' || oldData['sling:resourceType'] == 'nt/file') {
+                        changed = [repoPath];
+                    } else {
+                        changed = objectEquals(data, oldData, repoPath);
+                    }
+
+                    this._addToCtx(data, repoPath);
                     for (const ch of changed) {
                         this._changed(ch);
                     }
