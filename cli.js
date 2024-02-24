@@ -31,7 +31,7 @@ if (argv['webpack-config']) {
     }
 
     const webpackConfig = require(webpackConfigPath);
-    const WebpackServer = require('./src/server-webpack');
+    const WebpackServer = require('./src/fe-server/server-webpack');
     server = new WebpackServer(webpackConfig, serverConfig);
 } else if (argv['vite-config']) {
     const viteConfigPath = path.resolve(argv['vite-config']);
@@ -40,10 +40,10 @@ if (argv['webpack-config']) {
         exit(1);
     }
 
-    const ViteServer = require('./src/server-vite');
+    const ViteServer = require('./src/fe-server/server-vite');
     server = new ViteServer(viteConfigPath, serverConfig);
 } else {
-    const Server = require('./src/server');
+    const Server = require('./src/fe-server/server');
     server = new Server(serverConfig);
 }
 

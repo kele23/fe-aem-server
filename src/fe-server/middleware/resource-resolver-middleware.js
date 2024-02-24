@@ -1,5 +1,5 @@
 const { addData } = require('../utils/request-variables-utils');
-const ResourceResolver = require('../resources/resource-resolver');
+const ResourceResolver = require('../../engine/resources/resource-resolver');
 
 const rrMiddleware = (repoReadersObj) => {
     return async (req, res, next) => {

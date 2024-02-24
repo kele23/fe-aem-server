@@ -1,5 +1,5 @@
 const { EventEmitter } = require('node:events');
-const Logger = require('../utils/logger');
+const Logger = require('../../utils/logger');
 
 class RepoReader extends EventEmitter {
     constructor(basePath) {

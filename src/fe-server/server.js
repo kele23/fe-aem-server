@@ -1,11 +1,11 @@
 const express = require('express');
-const HTLRender = require('./htl/htl-render');
-const StaticRepositoryReader = require('./resources/readers/static-repository-reader');
+const HTLRender = require('../engine/htl/htl-render');
+const StaticRepositoryReader = require('../engine/resources/readers/static-repository-reader');
 const httpLoggerMiddleware = require('./middleware/http-logger-middleware');
 const rfMiddleware = require('./middleware/resource-founder-middleware');
 const mtRender = require('./methods/render-get-method');
 const { createProxyMiddleware } = require('http-proxy-middleware');
-const Logger = require('./utils/logger');
+const Logger = require('../utils/logger');
 const rrMiddleware = require('./middleware/resource-resolver-middleware');
 const path = require('path');
 

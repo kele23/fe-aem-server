@@ -2,7 +2,7 @@ const RepoReader = require('../repo-reader');
 const fs = require('fs');
 const path = require('path');
 const chokidar = require('chokidar');
-const { deepGet, mergeDeepToPath, objectEquals } = require('../../utils/utils');
+const { deepGet, mergeDeepToPath, objectEquals } = require('../../../utils/utils');
 
 class StaticRepositoryReader extends RepoReader {
     constructor(basePath, repoDir, options) {

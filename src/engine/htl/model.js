@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
-const logger = require('../utils/logger');
+const logger = require('../../utils/logger');
 
 class Model {
     constructor(mpath) {

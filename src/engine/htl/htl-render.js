@@ -3,7 +3,7 @@ const path = require('path').posix; // only forward slash
 const fs = require('fs');
 const Model = require('./model');
 const BindingsProvider = require('./bindings-provider');
-const logger = require('../utils/logger');
+const logger = require('../../utils/logger');
 const ResourceResolver = require('../resources/resource-resolver');
 
 class HTLRender {
