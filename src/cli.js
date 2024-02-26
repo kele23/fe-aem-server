@@ -5,7 +5,7 @@ import path from 'path';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { exit } from 'process';
-import Logger from './src/utils/logger.js';
+import Logger from './utils/logger.js';
 
 /// YARGS
 const argv = yargs(hideBin(process.argv)).argv;
@@ -31,7 +31,7 @@ if (argv['webpack-config']) {
     }
 
     const webpackConfig = (await import(webpackConfigPath)).default;
-    const WebpackServer = (await import('./src/server/server-webpack.js')).default;
+    const WebpackServer = (await import('./server/server-webpack.js')).default;
     server = new WebpackServer(webpackConfig, serverConfig);
 } else if (argv['vite-config']) {
     const viteConfigPath = path.resolve(argv['vite-config']);
@@ -40,10 +40,10 @@ if (argv['webpack-config']) {
         exit(1);
     }
 
-    const ViteServer = (await import('./src/server/server-vite.js')).default;
+    const ViteServer = (await import('./server/server-vite.js')).default;
     server = new ViteServer(viteConfigPath, serverConfig);
 } else {
-    const Server = (await import('./src/server/server.js')).default;
+    const Server = (await import('./server/server.js')).default;
     server = new Server(serverConfig);
 }
 

@@ -2,7 +2,7 @@
     "name": "@kele23/fe-aem-server",
     "version": "0.6.0",
     "description": "FE AEM Server",
-    "main": "index.js",
+    "main": "./src/index.js",
     "type": "module",
     "keywords": [
         "webpack",
@@ -11,6 +11,9 @@
         "aem",
         "htl",
         "express"
+    ],
+    "files": [
+        "/src"
     ],
     "repository": "https://github.com/kele23/fe-aem-server",
     "scripts": {
@@ -23,7 +26,7 @@
     "author": "Michele Scala <scala233@gmail.com>",
     "license": "MIT",
     "bin": {
-        "fe-aem-server": "./cli.js"
+        "fe-aem-server": "./src/cli.js"
     },
     "peerDependencies": {
         "vite": "^5.0.4",

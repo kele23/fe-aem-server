@@ -1,4 +1,4 @@
-import { HTLRender, RepoReader, StaticRepositoryReader, ResourceResolver, Resource, findResource } from './src/engine';
+import { HTLRender, RepoReader, StaticRepositoryReader, ResourceResolver, Resource, findResource } from './engine';
 
 module.exports = {
     HTLRender,
