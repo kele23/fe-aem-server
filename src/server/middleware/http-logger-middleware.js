@@ -1,5 +1,5 @@
-const morgan = require('morgan');
-const Logger = require('../../utils/logger');
+import morgan from 'morgan';
+import Logger from '../../utils/logger.js';
 
 // Override the stream method by telling
 // Morgan to use our custom logger instead of the console.log.
@@ -19,7 +19,7 @@ const httpLoggerMiddleware = morgan(
     ':method :url :status :res[content-length] - :response-time ms',
     // Options: in this case, I overwrote the stream and the skip logic.
     // See the methods above.
-    { stream }
+    { stream },
 );
 
-module.exports = httpLoggerMiddleware;
+export default httpLoggerMiddleware;

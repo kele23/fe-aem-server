@@ -1,4 +1,4 @@
-const path = require('path');
+import path from 'path';
 
 const findResource = (url, resourceResolver) => {
     let ph = url;
@@ -37,4 +37,4 @@ const findResource = (url, resourceResolver) => {
     return { resource, selectors, suffix, ph };
 };
 
-module.exports = findResource;
+export default findResource;

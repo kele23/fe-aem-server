@@ -1,5 +1,5 @@
-const { addData } = require('../utils/request-variables-utils');
-const ResourceResolver = require('../../engine/resources/resource-resolver');
+import { addData } from '../utils/request-variables-utils.js';
+import ResourceResolver from '../../engine/resources/resource-resolver.js';
 
 const rrMiddleware = (repoReadersObj) => {
     return async (req, res, next) => {
@@ -9,4 +9,4 @@ const rrMiddleware = (repoReadersObj) => {
     };
 };
 
-module.exports = rrMiddleware;
+export default rrMiddleware;

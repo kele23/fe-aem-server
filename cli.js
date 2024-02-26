@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const path = require('path');
-const yargs = require('yargs/yargs');
-const { hideBin } = require('yargs/helpers');
-const { exit } = require('process');
-const Logger = require('./src/utils/logger');
+import fs from 'fs';
+import path from 'path';
+import yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
+import { exit } from 'process';
+import Logger from './src/utils/logger.js';
 
 /// YARGS
 const argv = yargs(hideBin(process.argv)).argv;
@@ -19,7 +19,7 @@ if (!fs.existsSync(serverConfigPath)) {
     Logger.error('Please provide a valid configuration');
     exit(1);
 }
-const serverConfig = require(serverConfigPath);
+const serverConfig = (await import(serverConfigPath)).default;
 
 // vite or webpack
 let server = null;
@@ -30,8 +30,8 @@ if (argv['webpack-config']) {
         exit(1);
     }
 
-    const webpackConfig = require(webpackConfigPath);
-    const WebpackServer = require('./src/fe-server/server-webpack');
+    const webpackConfig = (await import(webpackConfigPath)).default;
+    const WebpackServer = (await import('./src/server/server-webpack.js')).default;
     server = new WebpackServer(webpackConfig, serverConfig);
 } else if (argv['vite-config']) {
     const viteConfigPath = path.resolve(argv['vite-config']);
@@ -40,10 +40,10 @@ if (argv['webpack-config']) {
         exit(1);
     }
 
-    const ViteServer = require('./src/fe-server/server-vite');
+    const ViteServer = (await import('./src/server/server-vite.js')).default;
     server = new ViteServer(viteConfigPath, serverConfig);
 } else {
-    const Server = require('./src/fe-server/server');
+    const Server = (await import('./src/server/server.js')).default;
     server = new Server(serverConfig);
 }
 

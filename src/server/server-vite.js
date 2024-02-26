@@ -1,4 +1,4 @@
-const Server = require('./server');
+import Server from './server.js';
 
 class ViteServer extends Server {
     constructor(viteConfigPath, serverConfig) {
@@ -17,4 +17,4 @@ class ViteServer extends Server {
     }
 }
 
-module.exports = ViteServer;
+export default ViteServer;

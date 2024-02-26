@@ -51,7 +51,7 @@ const init = function () {
         if (!data.path) return;
 
         const ends = document.querySelectorAll(
-            `meta[data-type="end"][data-path^="${data.path}"], meta[data-type="end"][data-usedfiles*="${data.path}"]`
+            `meta[data-type="end"][data-path^="${data.path}"], meta[data-type="end"][data-usedfiles*="${data.path}"]`,
         );
 
         // reload single elements

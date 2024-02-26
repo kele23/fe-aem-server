@@ -90,10 +90,4 @@ function objectEquals(v1, v2, path = '') {
     return r;
 }
 
-module.exports = {
-    isObject,
-    mergeDeep,
-    mergeDeepToPath,
-    deepGet,
-    objectEquals,
-};
+export { isObject, mergeDeep, mergeDeepToPath, deepGet, objectEquals };

@@ -1,6 +1,6 @@
-const Resource = require('./resource');
-const path = require('path');
-const RepoReader = require('./repo-reader');
+import Resource from './resource.js';
+import path from 'path';
+import RepoReader from './repo-reader.js';
 
 class ResourceResolver {
     constructor(repoReaders) {
@@ -203,4 +203,4 @@ class ResourceResolver {
     }
 }
 
-module.exports = ResourceResolver;
+export default  ResourceResolver;

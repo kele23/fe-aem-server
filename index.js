@@ -1,11 +1,4 @@
-const {
-    HTLRender,
-    RepoReader,
-    StaticRepositoryReader,
-    ResourceResolver,
-    Resource,
-    findResource,
-} = require('./src/engine');
+import { HTLRender, RepoReader, StaticRepositoryReader, ResourceResolver, Resource, findResource } from './src/engine';
 
 module.exports = {
     HTLRender,

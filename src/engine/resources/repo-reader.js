@@ -1,5 +1,5 @@
-const { EventEmitter } = require('node:events');
-const Logger = require('../../utils/logger');
+import { EventEmitter } from 'node:events';
+import Logger from '../../utils/logger.js';
 
 class RepoReader extends EventEmitter {
     constructor(basePath) {
@@ -96,4 +96,4 @@ class RepoReader extends EventEmitter {
     }
 }
 
-module.exports = RepoReader;
+export default RepoReader;

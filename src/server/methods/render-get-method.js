@@ -1,6 +1,9 @@
-const Logger = require('../../utils/logger');
-const { getData } = require('../utils/request-variables-utils');
-const path = require('path');
+import Logger from '../../utils/logger.js';
+import { getData } from '../utils/request-variables-utils.js';
+import path from 'path';
+
+import * as url from 'url';
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
 const mtRender = (render) => {
     return async (req, res) => {
@@ -24,4 +27,4 @@ const mtRender = (render) => {
     };
 };
 
-module.exports = mtRender;
+export default mtRender;

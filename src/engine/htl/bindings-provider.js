@@ -1,5 +1,5 @@
-const Model = require('./model');
-const path = require('path').posix; // only forward slash
+import Model from './model.js';
+import path from 'path';
 
 class BindingsProvider {
     /**
@@ -32,7 +32,7 @@ class BindingsProvider {
      */
     provide(resource, currentGlobals) {
         const result = {};
-        const res = this.htlResourceResolver.getResource(path.join(resource.getResourceType(), '@model.js'));
+        const res = this.htlResourceResolver.getResource(path.posix.join(resource.getResourceType(), '@model.js'));
         if (res) {
             const absPath = this.htlResourceResolver.getSystemPath(res.getPath());
             const model = new Model(absPath);
@@ -56,4 +56,4 @@ class BindingsProvider {
     }
 }
 
-module.exports = BindingsProvider;
+export default BindingsProvider;

@@ -1,5 +1,5 @@
-const findResource = require('../../engine/resources/resource-founder');
-const { addData, getData } = require('../utils/request-variables-utils');
+import findResource from '../../engine/resources/resource-founder.js';
+import { addData, getData } from '../utils/request-variables-utils.js';
 
 const rfMiddleware = () => {
     return async (req, res, next) => {
@@ -19,4 +19,4 @@ const rfMiddleware = () => {
     };
 };
 
-module.exports = rfMiddleware;
+export default rfMiddleware;

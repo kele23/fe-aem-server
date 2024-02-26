@@ -1,4 +1,4 @@
-const path = require('path');
+import path from 'path';
 
 class Resource {
     constructor(path, resourceType, resourceResolver) {
@@ -60,4 +60,4 @@ class Resource {
     }
 }
 
-module.exports = Resource;
+export default  Resource;

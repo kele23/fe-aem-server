@@ -1,8 +1,11 @@
-const webpack = require('webpack');
-const path = require('path');
-const Server = require('./server');
-const webpackDevMiddleware = require('webpack-dev-middleware');
-const webpackHotMiddleware = require('webpack-hot-middleware');
+import webpack from 'webpack';
+import path from 'path';
+import Server from './server.js';
+import webpackDevMiddleware from 'webpack-dev-middleware';
+import webpackHotMiddleware from 'webpack-hot-middleware';
+import * as url from 'url';
+
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
 class WebpackServer extends Server {
     constructor(webpackConfig, serverConfig) {
@@ -15,7 +18,8 @@ class WebpackServer extends Server {
         if (this.serverConfig.hotComponents) {
             this.webpackConfig.entry.push(path.resolve(__dirname, './static/client.js'));
         }
-        this.webpackConfig.plugins.push(new webpack.HotModuleReplacementPlugin());
+        if (this.webpackConfig.plugins) this.webpackConfig.plugins.push(new webpack.HotModuleReplacementPlugin());
+        else this.webpackConfig.plugins = [new webpack.HotModuleReplacementPlugin()];
         const compiler = webpack(this.webpackConfig);
 
         // middlewares
@@ -24,4 +28,4 @@ class WebpackServer extends Server {
     }
 }
 
-module.exports = WebpackServer;
+export default WebpackServer;

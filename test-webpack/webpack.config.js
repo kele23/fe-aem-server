@@ -1,10 +1,12 @@
-const path = require('path');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+import path from 'path';
+import * as url from 'url';
+
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
 const dist = path.resolve(__dirname, './dist');
 const src = path.resolve(__dirname, '.');
 
-module.exports = {
+export default {
     mode: 'development',
     devtool: 'inline-source-map',
 
@@ -15,9 +17,8 @@ module.exports = {
         publicPath: '/',
         path: dist,
         filename: 'bundle.js',
+        clean: true,
     },
-
-    plugins: [new CleanWebpackPlugin()],
 
     module: {
         rules: [
@@ -31,7 +32,7 @@ module.exports = {
                         loader: 'postcss-loader',
                         options: {
                             postcssOptions: {
-                                config: path.resolve(__dirname, 'postcss.config.js'),
+                                config: path.resolve(__dirname, 'postcss.config.cjs'),
                             },
                         },
                     },

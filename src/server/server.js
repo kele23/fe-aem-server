@@ -1,13 +1,16 @@
-const express = require('express');
-const HTLRender = require('../engine/htl/htl-render');
-const StaticRepositoryReader = require('../engine/resources/readers/static-repository-reader');
-const httpLoggerMiddleware = require('./middleware/http-logger-middleware');
-const rfMiddleware = require('./middleware/resource-founder-middleware');
-const mtRender = require('./methods/render-get-method');
-const { createProxyMiddleware } = require('http-proxy-middleware');
-const Logger = require('../utils/logger');
-const rrMiddleware = require('./middleware/resource-resolver-middleware');
-const path = require('path');
+import express from 'express';
+import HTLRender from '../engine/htl/htl-render.js';
+import StaticRepositoryReader from '../engine/resources/readers/static-repository-reader.js';
+import httpLoggerMiddleware from './middleware/http-logger-middleware.js';
+import rfMiddleware from './middleware/resource-founder-middleware.js';
+import mtRender from './methods/render-get-method.js';
+import { createProxyMiddleware } from 'http-proxy-middleware';
+import Logger from '../utils/logger.js';
+import rrMiddleware from './middleware/resource-resolver-middleware.js';
+import path from 'path';
+import * as url from 'url';
+
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
 class Server {
     constructor(serverConfig) {
@@ -104,7 +107,7 @@ class Server {
 
             app.use(
                 this.serverConfig.distFolder.middlewarePath || '/',
-                express.static(this.serverConfig.distFolder.path, options)
+                express.static(this.serverConfig.distFolder.path, options),
             );
         }
 
@@ -139,4 +142,4 @@ class Server {
     }
 }
 
-module.exports = Server;
+export default Server;

@@ -1,7 +1,7 @@
-const fs = require('fs');
-const path = require('path');
-const vm = require('vm');
-const logger = require('../../utils/logger');
+import fs from 'fs';
+import path from 'path';
+import vm from 'vm';
+import logger from '../../utils/logger.js';
 
 class Model {
     constructor(mpath) {
@@ -32,11 +32,6 @@ class Model {
                     return fn.apply(globals, objs);
                 },
                 console: logger,
-                exports,
-                require,
-                module,
-                __filename,
-                __dirname,
             });
 
             const source = fs.readFileSync(this.mpath, { encoding: 'utf-8' });
@@ -54,4 +49,4 @@ class Model {
     }
 }
 
-module.exports = Model;
+export default Model;

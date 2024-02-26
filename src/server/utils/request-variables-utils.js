@@ -7,7 +7,4 @@ const getData = (req, name) => {
     return req.wasdata?.[name];
 };
 
-module.exports = {
-    addData,
-    getData,
-};
+export { addData, getData };

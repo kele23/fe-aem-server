@@ -1,10 +1,12 @@
-const { Compiler, Runtime } = require('@adobe/htlengine');
-const path = require('path').posix; // only forward slash
-const fs = require('fs');
-const Model = require('./model');
-const BindingsProvider = require('./bindings-provider');
-const logger = require('../../utils/logger');
-const ResourceResolver = require('../resources/resource-resolver');
+import HTLEngine from '@adobe/htlengine';
+import path from 'path';
+import fs from 'fs';
+import Model from './model.js';
+import BindingsProvider from './bindings-provider.js';
+import logger from '../../utils/logger.js';
+import ResourceResolver from '../resources/resource-resolver.js';
+
+const { Compiler, Runtime } = HTLEngine;
 
 class HTLRender {
     /**
@@ -149,9 +151,9 @@ class HTLRender {
     _makeScriptResolver(resourceType, global) {
         return (baseDir, uri) => {
             let res = this.htlResourceResolver.getResource(uri);
-            if (!res) res = this.htlResourceResolver.getResource(path.join(resourceType, uri));
-            if (!res) res = this.htlResourceResolver.getResource(path.join(baseDir, uri));
-            if (!res) res = this.htlResourceResolver.getResource(path.join(resourceType, baseDir, uri));
+            if (!res) res = this.htlResourceResolver.getResource(path.posix.join(resourceType, uri));
+            if (!res) res = this.htlResourceResolver.getResource(path.posix.join(baseDir, uri));
+            if (!res) res = this.htlResourceResolver.getResource(path.posix.join(resourceType, baseDir, uri));
 
             if (res) {
                 // add file to global used
@@ -178,7 +180,7 @@ class HTLRender {
     // eslint-disable-next-line no-unused-vars
     _makeModuleImportGenerator(resourceType, global) {
         return (baseDir, varName, moduleId) => {
-            let join = path.join(resourceType, baseDir);
+            let join = path.posix.join(resourceType, baseDir);
 
             // first on current resourceType folder
             let resPath = this._getComponentResPath(join, moduleId);
@@ -237,11 +239,11 @@ class HTLRender {
             }
 
             // extract selectors
-            let parse = path.parse(rsPath);
+            let parse = path.posix.parse(rsPath);
             while (parse.ext) {
                 selectors = [parse.ext.substring(1), ...selectors];
                 rsPath = parse.dir + '/' + parse.name;
-                parse = path.parse(rsPath);
+                parse = path.posix.parse(rsPath);
             }
 
             // resolve resource with resourceType hint
@@ -328,15 +330,15 @@ class HTLRender {
      */
     _makeIncludeHandler() {
         return async (runtime, file) => {
-            const absFile = path.resolve(file);
+            const absFile = path.posix.resolve(file);
             const globals = runtime.globals;
             return await this._rendFile(absFile, globals, { absolutePath: true });
         };
     }
 
     _getComponentResPath(componentPath, name = null) {
-        const componentName = path.basename(componentPath);
-        const resPath = path.join(componentPath, name || `${componentName}.html`);
+        const componentName = path.posix.basename(componentPath);
+        const resPath = path.posix.join(componentPath, name || `${componentName}.html`);
         if (this.htlResourceResolver.getResource(resPath)) return resPath;
 
         const map = this.htlResourceResolver.getResource(componentPath).getValueMap();
@@ -360,4 +362,4 @@ class HTLRender {
     }
 }
 
-module.exports = HTLRender;
+export default HTLRender;
