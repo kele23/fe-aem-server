@@ -14,7 +14,7 @@ const init = function () {
 
             // make decoration
             let decoration = null;
-            if (end.dataset.decoration) {
+            if (end.dataset.decoration == 'true') {
                 const next = start.nextElementSibling;
                 decoration = next.cloneNode(false);
             }
