@@ -133,15 +133,31 @@ class StaticRepositoryReader extends RepoReader {
                     const oldData = this._getFromCtx(repoPath);
 
                     let changed = [];
-                    if (data['sling:resourceType'] == 'nt/file' || oldData['sling:resourceType'] == 'nt/file') {
-                        changed = [repoPath];
-                    } else {
-                        changed = objectEquals(data, oldData, repoPath);
+                    if (data && oldData) {
+                        if (data['sling:resourceType'] == 'nt/file' || oldData['sling:resourceType'] == 'nt/file') {
+                            changed = [repoPath];
+                        } else {
+                            changed = objectEquals(data, oldData, repoPath);
+                        }
                     }
 
+                    // reset ctx and add new data
+                    this._resetCtx();
                     this._addToCtx(data, repoPath);
+
+                    // check changed
                     for (const ch of changed) {
-                        this._changed(ch);
+                        if (ch.endsWith('tobecontinue')) continue;
+
+                        let tmpCh = ch;
+                        let dt = this._getFromCtx(tmpCh);
+                        while (dt && !dt['sling:resourceType']) {
+                            const split = tmpCh.split('/');
+                            tmpCh = split.slice(0, split.length - 1).join('/');
+                            dt = this._getFromCtx(tmpCh);
+                        }
+
+                        this._changed(tmpCh);
                     }
                 }
 
@@ -168,6 +184,13 @@ class StaticRepositoryReader extends RepoReader {
      */
     _addToCtx(data, basePath) {
         this.ctx = mergeDeepToPath(this.ctx, data, basePath);
+    }
+
+    /**
+     * reset ctx to its origina value
+     */
+    _resetCtx() {
+        this.ctx = {};
     }
 }
 

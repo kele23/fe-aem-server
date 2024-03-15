@@ -1,6 +1,6 @@
 {
     "name": "@kele23/fe-aem-server",
-    "version": "0.6.0",
+    "version": "0.6.1",
     "description": "FE AEM Server",
     "main": "./src/index.js",
     "type": "module",
@@ -17,11 +17,11 @@
     ],
     "repository": "https://github.com/kele23/fe-aem-server",
     "scripts": {
-        "test-vite": "node cli.js --vite-config test-vite/vite.config.js --server-config test-vite/server.config.js",
-        "test-webpack": "node cli.js --webpack-config test-webpack/webpack.config.js --server-config test-webpack/server.config.js",
-        "test-dist": "node cli.js --server-config test-webpack/server.config.js",
+        "test-vite": "node ./src/cli.js --vite-config test-vite/vite.config.js --server-config test-vite/server.config.js",
+        "test-webpack": "node ./src/cli.js --webpack-config test-webpack/webpack.config.js --server-config test-webpack/server.config.js",
+        "test-dist": "node ./src/cli.js --server-config test-webpack/server.config.js",
         "build": "webpack --config test-webpack/webpack.config.js",
-        "start": "node cli.js --server-config test-webpack/server.config.js"
+        "start": "node ./src/cli.js --server-config test-webpack/server.config.js"
     },
     "author": "Michele Scala <scala233@gmail.com>",
     "license": "MIT",

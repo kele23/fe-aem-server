@@ -17,16 +17,28 @@
                     "description": "An example of using a custom model",
                     "link": "##REF:../../../_partials/basic-link.json"
                 },
-                "space": {
+                "ola": {
                     "sling:resourceType": "archi/components/content/space"
                 },
                 "card": {
                     "sling:resourceType": "archi/components/content/cards",
                     "card1": {
                         "image": { "src": "https://picsum.photos/400", "alt": "Random" },
-                        "title": "Card1 - from properties",
+                        "title": "Card - from properties",
                         "description": "Example of templates & use other models"
                     }
+                },
+                "ola2": {
+                    "sling:resourceType": "archi/components/content/space"
+                },
+                "hero2": {
+                    "sling:resourceType": "archi/components/content/hero",
+                    "title": "CIAO TITO!!",
+                    "description": "An example of using a custom model",
+                    "link": "##REF:../../../_partials/basic-link.json"
+                },
+                "ola3": {
+                    "sling:resourceType": "archi/components/content/space"
                 },
                 "space2": {
                     "sling:resourceType": "archi/components/content/space"

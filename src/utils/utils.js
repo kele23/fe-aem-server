@@ -69,6 +69,8 @@ function countProps(obj) {
 }
 
 function objectEquals(v1, v2, path = '') {
+    if (!v1 || !v2) return [path];
+
     if (countProps(v1) !== countProps(v2)) {
         return [path];
     }
