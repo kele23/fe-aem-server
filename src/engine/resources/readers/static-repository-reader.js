@@ -40,7 +40,6 @@ class StaticRepositoryReader extends RepoReader {
             //binary file or folder
             data = {
                 'sling:resourceType': fs.statSync(systemPath).isDirectory() ? 'sling/Folder' : 'nt/file',
-                tobecontinue: false,
             };
         } else {
             // json file ( read it )
@@ -50,10 +49,17 @@ class StaticRepositoryReader extends RepoReader {
                 tobecontinue: false,
             };
 
-            // read sibling items
-            if (fs.existsSync(this.sourceDir + systemPath) && fs.statSync(this.sourceDir + systemPath).isDirectory()) {
+            let folder = null;
+            if (path.basename(systemPath) == 'index.json') {
+                folder = path.resolve(path.dirname(systemPath));
+            } else {
+                folder = path.resolve(path.dirname(systemPath), path.basename(systemPath, '.json'));
+            }
+
+            // read children items
+            if (fs.existsSync(folder) && fs.statSync(folder).isDirectory()) {
                 const names = fs
-                    .readdirSync(this.sourceDir + systemPath, { withFileTypes: true })
+                    .readdirSync(folder, { withFileTypes: true })
                     .map((dirent) => dirent.name)
                     .filter((name) => name != 'index.json')
                     .map((name) => (name.endsWith('.json') ? name.substring(0, name.indexOf('.json')) : name));
