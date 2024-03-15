@@ -6,6 +6,10 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { exit } from 'process';
 import Logger from './utils/logger.js';
+import { pathToFileURL } from 'url';
+import * as url from 'url';
+
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
 /// YARGS
 const argv = yargs(hideBin(process.argv)).argv;
@@ -19,7 +23,7 @@ if (!fs.existsSync(serverConfigPath)) {
     Logger.error('Please provide a valid configuration');
     exit(1);
 }
-const serverConfig = (await import(serverConfigPath)).default;
+const serverConfig = (await import(pathToFileURL(serverConfigPath).toString())).default;
 
 // vite or webpack
 let server = null;
@@ -30,8 +34,9 @@ if (argv['webpack-config']) {
         exit(1);
     }
 
-    const webpackConfig = (await import(webpackConfigPath)).default;
-    const WebpackServer = (await import('./server/server-webpack.js')).default;
+    const webpackConfig = (await import(pathToFileURL(webpackConfigPath).toString())).default;
+    const serverWebpackPath = path.resolve(__dirname, 'server', 'server-webpack.js');
+    const WebpackServer = (await import(pathToFileURL(serverWebpackPath).toString())).default;
     server = new WebpackServer(webpackConfig, serverConfig);
 } else if (argv['vite-config']) {
     const viteConfigPath = path.resolve(argv['vite-config']);
@@ -40,10 +45,12 @@ if (argv['webpack-config']) {
         exit(1);
     }
 
-    const ViteServer = (await import('./server/server-vite.js')).default;
+    const serverVitePath = path.resolve(__dirname, 'server', 'server-vite.js');
+    const ViteServer = (await import(pathToFileURL(serverVitePath).toString())).default;
     server = new ViteServer(viteConfigPath, serverConfig);
 } else {
-    const Server = (await import('./server/server.js')).default;
+    const serverPath = path.resolve(__dirname, 'server', 'server.js');
+    const Server = (await import(pathToFileURL(serverPath).toString())).default;
     server = new Server(serverConfig);
 }
 
