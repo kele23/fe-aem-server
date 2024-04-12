@@ -1,7 +1,8 @@
 import path from 'path';
 
 const findResource = (url, resourceResolver) => {
-    let ph = url;
+    // fix jcr:content url
+    let ph = url.replace('_jcr_content', 'jcr:content');
     // extract suffix
     let suffix = '';
     if (ph.indexOf('.html') >= 0) {

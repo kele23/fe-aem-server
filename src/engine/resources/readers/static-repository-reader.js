@@ -4,11 +4,14 @@ import path from 'path';
 import chokidar from 'chokidar';
 import { deepGet, mergeDeepToPath, objectEquals } from '../../../utils/utils.js';
 
+// json file = page
 class StaticRepositoryReader extends RepoReader {
     constructor(basePath, repoDir, options) {
         super(basePath);
         this.sourceDir = repoDir;
         this.options = options || {};
+
+        this.loaded = [];
         this.ctx = {};
 
         this._addFsListener();
@@ -16,7 +19,7 @@ class StaticRepositoryReader extends RepoReader {
 
     get(repoPath) {
         const value = this._getFromCtx(repoPath);
-        if (value && !value.tobecontinue) return value;
+        if (value) return value;
 
         // load base path
         let basePath = repoPath;
@@ -28,7 +31,7 @@ class StaticRepositoryReader extends RepoReader {
         if (!systemPath) return null;
 
         const data = this._loadData(systemPath);
-        this._addToCtx(data, basePath);
+        this._addToCtx(data, basePath, systemPath);
         return this._getFromCtx(repoPath);
     }
 
@@ -46,28 +49,7 @@ class StaticRepositoryReader extends RepoReader {
             const source = this._checkNesting(fs.readFileSync(systemPath, 'utf8'), systemPath);
             data = {
                 ...JSON.parse(source),
-                tobecontinue: false,
             };
-
-            let folder = null;
-            if (path.basename(systemPath) == 'index.json') {
-                folder = path.resolve(path.dirname(systemPath));
-            } else {
-                folder = path.resolve(path.dirname(systemPath), path.basename(systemPath, '.json'));
-            }
-
-            // read children items
-            if (fs.existsSync(folder) && fs.statSync(folder).isDirectory()) {
-                const names = fs
-                    .readdirSync(folder, { withFileTypes: true })
-                    .map((dirent) => dirent.name)
-                    .filter((name) => name != 'index.json')
-                    .map((name) => (name.endsWith('.json') ? name.substring(0, name.indexOf('.json')) : name));
-
-                for (let name of names) {
-                    data[name] = { tobecontinue: true };
-                }
-            }
         }
 
         return data;
@@ -153,8 +135,6 @@ class StaticRepositoryReader extends RepoReader {
 
                     // check changed
                     for (const ch of changed) {
-                        if (ch.endsWith('tobecontinue')) continue;
-
                         let tmpCh = ch;
                         let dt = this._getFromCtx(tmpCh);
                         while (dt && !dt['sling:resourceType']) {
@@ -180,7 +160,9 @@ class StaticRepositoryReader extends RepoReader {
      * @returns An object from the ctx
      */
     _getFromCtx(repoPath) {
-        return deepGet(this.ctx, repoPath);
+        const systemPath = this.getSystemPath(repoPath);
+        if (this.loaded.includes(systemPath)) return deepGet(this.ctx, repoPath);
+        return null;
     }
 
     /**
@@ -188,7 +170,8 @@ class StaticRepositoryReader extends RepoReader {
      * @param {*} data The repository data
      * @param {*} basePath The basePath ( of where starts the data )
      */
-    _addToCtx(data, basePath) {
+    _addToCtx(data, basePath, systemPath) {
+        this.loaded.push(systemPath);
         this.ctx = mergeDeepToPath(this.ctx, data, basePath);
     }
 
@@ -197,6 +180,7 @@ class StaticRepositoryReader extends RepoReader {
      */
     _resetCtx() {
         this.ctx = {};
+        this.loaded = [];
     }
 }
 
