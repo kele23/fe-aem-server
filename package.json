@@ -1,6 +1,6 @@
 {
     "name": "@kele23/fe-aem-server",
-    "version": "0.6.5",
+    "version": "0.6.6",
     "description": "FE AEM Server",
     "main": "./src/index.js",
     "type": "module",
@@ -31,7 +31,7 @@
     "peerDependencies": {
         "vite": "^5.0.4",
         "webpack": "^5.68.0",
-        "webpack-dev-middleware": "^6.1.1",
+        "webpack-dev-middleware": "^7.2.0",
         "webpack-hot-middleware": "^2.25.4"
     },
     "dependencies": {
