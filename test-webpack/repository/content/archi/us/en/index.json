@@ -14,7 +14,7 @@
                 "hero": {
                     "sling:resourceType": "archi/components/content/hero",
                     "title": "Hero",
-                    "description": "An example of using a custom model",
+                    "description": "An example of using a custom model luca",
                     "link": "##REF:../../../_partials/basic-link.json"
                 },
                 "ola": {

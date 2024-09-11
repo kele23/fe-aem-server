@@ -1,7 +1,7 @@
-import RepoReader from '../repo-reader.js';
+import chokidar from 'chokidar';
 import fs from 'fs';
 import path from 'path';
-import chokidar from 'chokidar';
+import RepoReader from '../repo-reader.js';
 import { deepGet, mergeDeepToPath, objectEquals } from '../../../utils/utils.js';
 
 // json file = page
@@ -12,47 +12,16 @@ class StaticRepositoryReader extends RepoReader {
         this.options = options || {};
 
         this.loaded = [];
-        this.ctx = {};
-
+        this.fileCache = {};
         this._addFsListener();
     }
 
     get(repoPath) {
-        const value = this._getFromCtx(repoPath);
-        if (value) return value;
-
-        // load base path
-        let basePath = repoPath;
-        if (repoPath.indexOf('jcr:content') >= 0) {
-            basePath = repoPath.substring(0, repoPath.indexOf('jcr:content') - 1);
-        }
-
         const systemPath = this.getSystemPath(repoPath);
         if (!systemPath) return null;
 
-        const data = this._loadData(systemPath);
-        this._addToCtx(data, basePath, systemPath);
-        return this._getFromCtx(repoPath);
-    }
-
-    _loadData(systemPath) {
-        const binaryFile = !systemPath.endsWith('.json');
-
-        let data = null;
-        if (binaryFile) {
-            //binary file or folder
-            data = {
-                'sling:resourceType': fs.statSync(systemPath).isDirectory() ? 'sling/Folder' : 'nt/file',
-            };
-        } else {
-            // json file ( read it )
-            const source = this._checkNesting(fs.readFileSync(systemPath, 'utf8'), systemPath);
-            data = {
-                ...JSON.parse(source),
-            };
-        }
-
-        return data;
+        const data = this._absData(this._loadData(systemPath), repoPath);
+        return deepGet(data, repoPath);
     }
 
     getSystemPath(repoPath) {
@@ -76,6 +45,7 @@ class StaticRepositoryReader extends RepoReader {
                 }
             }
         }
+
         return finalPath;
     }
 
@@ -95,12 +65,64 @@ class StaticRepositoryReader extends RepoReader {
         return await this.options.transformSource(txt, { repoPath, systemPath });
     }
 
+    _getFileFromCache(filename) {
+        if (this.fileCache[filename]) {
+            return this.fileCache[filename];
+        }
+
+        const data = fs.readFileSync(filename, 'utf8');
+        this.fileCache[filename] = data;
+        return data;
+    }
+
+    _absData(data, repoPath) {
+        // obtain first jcr:content
+        let basePath = repoPath;
+        if (repoPath.indexOf('jcr:content') >= 0) {
+            basePath = repoPath.substring(0, repoPath.indexOf('jcr:content') - 1);
+        }
+
+        // add obj into repoObj on basePath
+        const repoObj = {};
+        mergeDeepToPath(repoObj, data, basePath);
+        return repoObj;
+    }
+
+    _loadData(systemPath) {
+        const binaryFile = !systemPath.endsWith('.json');
+
+        let data = null;
+        if (binaryFile) {
+            //binary file or folder
+            data = {
+                'sling:resourceType': fs.statSync(systemPath).isDirectory() ? 'sling/Folder' : 'nt/file',
+            };
+        } else {
+            // json file ( read it )
+            const source = this._checkNesting(this._getFileFromCache(systemPath), systemPath);
+            data = {
+                ...JSON.parse(source),
+            };
+        }
+
+        // load children objects
+        if (systemPath.endsWith('index.json')) {
+            const files = fs.readdirSync(path.dirname(systemPath));
+            for (const file of files) {
+                if (file == 'index.json') continue;
+                data[file.replace('.json', '')] = {};
+            }
+        }
+
+        return data;
+    }
+
     _checkNesting(source, fsPath) {
         const dir = path.dirname(fsPath);
         return source.replace(/"##REF:([^"]+)"/g, (match, $1) => {
             const filePath = path.join(dir, $1);
             if (fs.existsSync(filePath)) {
-                return fs.readFileSync(filePath, 'utf-8');
+                return this._getFileFromCache(filePath);
             }
             return 'null';
         });
@@ -116,31 +138,35 @@ class StaticRepositoryReader extends RepoReader {
             timeout = setTimeout(() => {
                 // iterate changes
                 for (const change of Array.from(changes)) {
+                    // no cache, no changes
+                    if (!this.fileCache[change]) continue;
+
+                    // get repo path of the change
                     const repoPath = this.revertSystemPath(change);
-                    const data = this._loadData(change);
-                    const oldData = this._getFromCtx(repoPath);
+                    // get old data for this change
+                    const oldData = this._absData(this._loadData(change), repoPath);
+                    // delete cache
+                    delete this.fileCache[change];
+                    // get new data
+                    const data = this._absData(this._loadData(change), repoPath);
 
                     let changed = [];
                     if (data && oldData) {
                         if (data['sling:resourceType'] == 'nt/file' || oldData['sling:resourceType'] == 'nt/file') {
                             changed = [repoPath];
                         } else {
-                            changed = objectEquals(data, oldData, repoPath);
+                            changed = objectEquals(data, oldData);
                         }
                     }
-
-                    // reset ctx and add new data
-                    this._resetCtx();
-                    this._addToCtx(data, repoPath);
 
                     // check changed
                     for (const ch of changed) {
                         let tmpCh = ch;
-                        let dt = this._getFromCtx(tmpCh);
-                        while (dt && !dt['sling:resourceType']) {
+                        let dt = deepGet(data, tmpCh);
+                        while (tmpCh.length > 1 && (!dt || !dt['sling:resourceType'])) {
                             const split = tmpCh.split('/');
                             tmpCh = split.slice(0, split.length - 1).join('/');
-                            dt = this._getFromCtx(tmpCh);
+                            dt = deepGet(data, tmpCh);
                         }
 
                         this._changed(tmpCh);
@@ -151,36 +177,6 @@ class StaticRepositoryReader extends RepoReader {
                 changes.clear();
             }, 200);
         });
-    }
-
-    /**
-     * Get the object from the context
-     * @param {*} repoPath The path
-     * @param {*} ctx The ctx object
-     * @returns An object from the ctx
-     */
-    _getFromCtx(repoPath) {
-        const systemPath = this.getSystemPath(repoPath);
-        if (this.loaded.includes(systemPath)) return deepGet(this.ctx, repoPath);
-        return null;
-    }
-
-    /**
-     * Adds repository data to the ctx
-     * @param {*} data The repository data
-     * @param {*} basePath The basePath ( of where starts the data )
-     */
-    _addToCtx(data, basePath, systemPath) {
-        this.loaded.push(systemPath);
-        this.ctx = mergeDeepToPath(this.ctx, data, basePath);
-    }
-
-    /**
-     * reset ctx to its origina value
-     */
-    _resetCtx() {
-        this.ctx = {};
-        this.loaded = [];
     }
 }
 
