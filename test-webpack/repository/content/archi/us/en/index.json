@@ -13,8 +13,8 @@
                 "sling:resourceType": "wcm/foundation/components/parsys",
                 "hero": {
                     "sling:resourceType": "archi/components/content/hero",
-                    "title": "Hero",
-                    "description": "An example of using a custom model luca",
+                    "title": "Hero ABC",
+                    "description": "An example of using a custom",
                     "link": "##REF:../../../_partials/basic-link.json"
                 },
                 "ola": {

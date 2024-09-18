@@ -138,11 +138,15 @@ class StaticRepositoryReader extends RepoReader {
             timeout = setTimeout(() => {
                 // iterate changes
                 for (const change of Array.from(changes)) {
-                    // no cache, no changes
-                    if (!this.fileCache[change]) continue;
-
                     // get repo path of the change
                     const repoPath = this.revertSystemPath(change);
+
+                    // content change! no cache = trigger repo path change ( page or file )
+                    if (!this.fileCache[change]) {
+                        this._changed(repoPath);
+                        continue;
+                    }
+
                     // get old data for this change
                     const oldData = this._absData(this._loadData(change), repoPath);
                     // delete cache
