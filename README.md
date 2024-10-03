@@ -183,20 +183,7 @@ module.exports = {
             rootPath: '/',
             localPath: path.resolve(src, 'repository'),
             type: 'file',
-        },
-        {
-            rootPath: '/content/remote',
-            type: 'remote',
-            aemRemote: 'http://localhost:4502/content/remote',
-            options: {
-                urlFn: (remote, cleanedPath, level) => {
-                    return `${remote}${cleanedPath}.aktrend.${level}.json`;
-                },
-                request: {
-                    authorization: 'YWRtaW46YWRtaW4=',
-                },
-            },
-        },
+        }
     ],
     proxies: [
         // proxy to backend AEM or other apis
@@ -215,11 +202,10 @@ module.exports = {
 The most important configuration of course is `contentRepos`.
 This section specifies a list of providers that provide the system with the resources necessary for working, whether they are contents (pages) or components.
 
-By default there are three types of providers (also called RepoReaders in the project):
+By default there are two types of providers (also called RepoReaders in the project):
 
 1. **file**: Obtains resources from the file system
-2. **remote**: Obtains resource from a remote AEM instance
-3. **custom**: You have to provide your function to provide contents to the system
+2. **custom**: You have to provide your function to provide contents to the system
 
 For the moment only the "file" typology supports the provision of code for components as the HTL Engine used requires absolute paths in the local file system to function correctly. The other types, however, can easily support the provision of page content.
 
