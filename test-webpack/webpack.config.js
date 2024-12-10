@@ -16,7 +16,7 @@ export default {
     output: {
         publicPath: '/',
         path: dist,
-        filename: 'bundle.js',
+        filename: '[name].js',
         clean: true,
     },
 

@@ -14,10 +14,27 @@ class WebpackServer extends Server {
     }
 
     async _addCustomMiddlewares(app) {
-        this.webpackConfig.entry = [this.webpackConfig.entry, 'webpack-hot-middleware/client?reload=true'];
-        if (this.serverConfig.hotComponents) {
-            this.webpackConfig.entry.push(path.resolve(__dirname, './static/client.js'));
+        let entries = {
+            hotmw: 'webpack-hot-middleware/client?reload=true',
+        };
+
+        if (typeof this.webpackConfig.entry === 'string') {
+            entries['main'] = this.webpackConfig.entry;
+        } else if (Array.isArray(this.webpackConfig.entry)) {
+            for (let i = 0; i < this.webpackConfig.entry.length; i++) {
+                entries[`entry-${i}`] = this.webpackConfig.entry[i];
+            }
+        } else {
+            entries = { ...entries, ...this.webpackConfig.entry };
         }
+
+        if (this.serverConfig.hotComponents) {
+            entries['hotclient'] = path.resolve(__dirname, './static/client.js');
+        }
+
+        // set webpack entries
+        this.webpackConfig.entry = entries;
+
         if (this.webpackConfig.plugins) this.webpackConfig.plugins.push(new webpack.HotModuleReplacementPlugin());
         else this.webpackConfig.plugins = [new webpack.HotModuleReplacementPlugin()];
         const compiler = webpack(this.webpackConfig);
