@@ -11,7 +11,7 @@ export default {
     devtool: 'inline-source-map',
 
     target: ['web'],
-    entry: path.resolve(src, 'index.js'),
+    entry: { main: path.resolve(src, 'index.js'), style: path.resolve(src, 'style.css') },
 
     output: {
         publicPath: '/',

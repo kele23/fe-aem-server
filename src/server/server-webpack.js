@@ -14,22 +14,23 @@ class WebpackServer extends Server {
     }
 
     async _addCustomMiddlewares(app) {
-        let entries = {
-            hot: ['webpack-hot-middleware/client?reload=true'],
-        };
-
-        if (typeof this.webpackConfig.entry === 'string') {
-            entries['main'] = this.webpackConfig.entry;
-        } else if (Array.isArray(this.webpackConfig.entry)) {
-            for (let i = 0; i < this.webpackConfig.entry.length; i++) {
-                entries[`entry-${i}`] = this.webpackConfig.entry[i];
-            }
-        } else {
-            entries = { ...entries, ...this.webpackConfig.entry };
+        const hot = ['webpack-hot-middleware/client?reload=true'];
+        if (this.serverConfig.hotComponents) {
+            hot.push(path.resolve(__dirname, './static/client.js'));
         }
 
-        if (this.serverConfig.hotComponents) {
-            entries['hot'].push(path.resolve(__dirname, './static/client.js'));
+        let entries = null;
+        if (typeof this.webpackConfig.entry === 'string') {
+            entries = [...hot, this.webpackConfig.entry];
+        } else if (Array.isArray(this.webpackConfig.entry)) {
+            entries = [...hot, ...this.webpackConfig.entry];
+        } else {
+            entries = {};
+            for (const key in this.webpackConfig.entry) {
+                const cuEntry = this.webpackConfig.entry[key];
+                const cu = Array.isArray(cuEntry) ? cuEntry : [cuEntry];
+                entries[key] = [...hot, ...cu];
+            }
         }
 
         // set webpack entries

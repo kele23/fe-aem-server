@@ -1,4 +1,9 @@
 const init = function () {
+    if (window.hothtmlclient) {
+        return;
+    }
+
+    window.hothtmlclient = true;
     const id = Math.floor(Math.random() * 100000);
     console.log('[WAS] starting SSE', id);
     const evtSource = new EventSource('/repoevents');
