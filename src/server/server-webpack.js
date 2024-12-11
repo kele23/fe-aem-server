@@ -15,7 +15,7 @@ class WebpackServer extends Server {
 
     async _addCustomMiddlewares(app) {
         let entries = {
-            hotmw: 'webpack-hot-middleware/client?reload=true',
+            hot: ['webpack-hot-middleware/client?reload=true'],
         };
 
         if (typeof this.webpackConfig.entry === 'string') {
@@ -29,7 +29,7 @@ class WebpackServer extends Server {
         }
 
         if (this.serverConfig.hotComponents) {
-            entries['hotclient'] = path.resolve(__dirname, './static/client.js');
+            entries['hot'].push(path.resolve(__dirname, './static/client.js'));
         }
 
         // set webpack entries

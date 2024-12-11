@@ -14,7 +14,7 @@
                 "hero": {
                     "sling:resourceType": "archi/components/content/hero",
                     "title": "Hero ABC",
-                    "description": "An example of using",
+                    "description": "An example of using an hero!!",
                     "link": "##REF:../../../_partials/basic-link.json"
                 },
                 "ola": {
