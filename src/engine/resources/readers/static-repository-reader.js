@@ -3,6 +3,8 @@ import fs from 'fs';
 import path from 'path';
 import RepoReader from '../repo-reader.js';
 import { deepGet, mergeDeepToPath, objectEquals } from '../../../utils/utils.js';
+import YAML from 'yaml';
+import Logger from '../../../utils/logger.js';
 
 // json file = page
 class StaticRepositoryReader extends RepoReader {
@@ -34,26 +36,34 @@ class StaticRepositoryReader extends RepoReader {
 
         //json extension
         let finalPath = this.sourceDir + systemPath + '.json';
-        if (!fs.existsSync(finalPath)) {
-            //folder and json extension
-            finalPath = this.sourceDir + systemPath + path.sep + 'index.json';
-            if (!fs.existsSync(finalPath)) {
-                //take as binary file
-                finalPath = this.sourceDir + systemPath;
-                if (!fs.existsSync(finalPath)) {
-                    return null;
-                }
-            }
-        }
+        if (fs.existsSync(finalPath)) return finalPath;
 
-        return finalPath;
+        //yml extension
+        finalPath = this.sourceDir + systemPath + '.yml';
+        if (fs.existsSync(finalPath)) return finalPath;
+
+        //folder and json extension
+        finalPath = this.sourceDir + systemPath + path.sep + 'index.json';
+        if (fs.existsSync(finalPath)) return finalPath;
+
+        //folder and yml extension
+        finalPath = this.sourceDir + systemPath + path.sep + 'index.yml';
+        if (fs.existsSync(finalPath)) return finalPath;
+
+        //take as binary file
+        finalPath = this.sourceDir + systemPath;
+        if (fs.existsSync(finalPath)) return finalPath;
+
+        return null;
     }
 
     revertSystemPath(systemPath) {
         const tmpPath = systemPath.replace(this.sourceDir, '');
         let finalPath = tmpPath.split(path.sep).join(path.posix.sep);
-        if (finalPath.endsWith('/index.json')) finalPath = finalPath.replace('/index.json', '');
+        if (finalPath.endsWith(path.sep + 'index.json')) finalPath = finalPath.replace(path.sep + 'index.json', '');
+        if (finalPath.endsWith(path.sep + 'index.yml')) finalPath = finalPath.replace(path.sep + 'index.yml', '');
         if (finalPath.endsWith('.json')) finalPath = finalPath.replace('.json', '');
+        if (finalPath.endsWith('.yml')) finalPath = finalPath.replace('.yml', '');
         return finalPath;
     }
 
@@ -66,13 +76,22 @@ class StaticRepositoryReader extends RepoReader {
     }
 
     _getFileFromCache(filename) {
-        if (this.fileCache[filename]) {
-            return this.fileCache[filename];
+        // read file, optionally from cache
+        let source = this.fileCache[filename];
+        if (!source) {
+            const data = fs.readFileSync(filename, 'utf8');
+            this.fileCache[filename] = data;
+            source = data;
         }
 
-        const data = fs.readFileSync(filename, 'utf8');
-        this.fileCache[filename] = data;
-        return data;
+        // convert into object
+        try {
+            if (filename.endsWith('.json')) return JSON.parse(source);
+            return YAML.parse(source);
+        } catch (e) {
+            Logger.warn(e);
+        }
+        return {};
     }
 
     _absData(data, repoPath) {
@@ -89,7 +108,7 @@ class StaticRepositoryReader extends RepoReader {
     }
 
     _loadData(systemPath) {
-        const binaryFile = !systemPath.endsWith('.json');
+        const binaryFile = !systemPath.endsWith('.json') && !systemPath.endsWith('.yml');
 
         let data = null;
         if (binaryFile) {
@@ -98,34 +117,34 @@ class StaticRepositoryReader extends RepoReader {
                 'sling:resourceType': fs.statSync(systemPath).isDirectory() ? 'sling/Folder' : 'nt/file',
             };
         } else {
-            // json file ( read it )
-            const source = this._checkNesting(this._getFileFromCache(systemPath), systemPath);
-            data = {
-                ...JSON.parse(source),
-            };
+            // read source
+            data = this._checkNesting(this._getFileFromCache(systemPath), systemPath);
         }
 
         // load children objects
-        if (systemPath.endsWith('index.json')) {
+        if (systemPath.endsWith('index.json') || systemPath.endsWith('index.yml')) {
             const files = fs.readdirSync(path.dirname(systemPath));
             for (const file of files) {
-                if (file == 'index.json') continue;
-                data[file.replace('.json', '')] = {};
+                if (file == 'index.json' || file == 'index.yml') continue;
+                data[file.replace('.json', '').replace('.yml', '')] = {};
             }
         }
 
         return data;
     }
 
-    _checkNesting(source, fsPath) {
+    _checkNesting(data, fsPath) {
         const dir = path.dirname(fsPath);
-        return source.replace(/"##REF:([^"]+)"/g, (match, $1) => {
+        const source = JSON.stringify(data);
+        const result = source.replace(/"##REF:([^"]+)"/g, (match, $1) => {
             const filePath = path.join(dir, $1);
             if (fs.existsSync(filePath)) {
-                return this._getFileFromCache(filePath);
+                return JSON.stringify(this._getFileFromCache(filePath));
             }
             return 'null';
         });
+
+        return JSON.parse(result);
     }
 
     _addFsListener() {

@@ -1,0 +1,21 @@
+jcr:primaryType: 'cq:Page'
+jcr:content:
+    sling:resourceType: 'archi/components/pages/basic-page'
+    jcr:title: 'Webpack AEM Server - Child'
+    jcr:description: 'This is a tool to simulate an AEM server using frontend tecnologies and JS language!!'
+    root:
+        sling:resourceType: 'wcm/foundation/components/parsys'
+        header:
+            sling:resourceType: 'archi/components/structure/header'
+        parsys:
+            sling:resourceType: 'wcm/foundation/components/parsys'
+            hero:
+                sling:resourceType: 'archi/components/content/hero'
+                title: 'Child'
+                description: |
+                    An example of using a custom model
+                    asfsaf
+                    asfasf
+                link: '##REF:../../../_partials/basic-link.json'
+            footer:
+                sling:resourceType: 'archi/components/structure/footer'

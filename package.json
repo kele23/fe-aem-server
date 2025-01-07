@@ -1,6 +1,6 @@
 {
     "name": "@kele23/fe-aem-server",
-    "version": "0.7.1",
+    "version": "0.7.2",
     "description": "FE AEM Server",
     "main": "./src/index.js",
     "type": "module",
@@ -42,6 +42,7 @@
         "http-proxy-middleware": "^2.0.6",
         "morgan": "^1.10.0",
         "winston": "^3.7.2",
+        "yaml": "^2.7.0",
         "yargs": "^17.1.0"
     },
     "devDependencies": {
