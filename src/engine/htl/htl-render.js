@@ -14,9 +14,9 @@ class HTLRender {
      * @param {BindingsProvider} bindings The BindingsPro
      * @param {Object} options Compilation options
      */
-    constructor(repoReaders, { modelAlias, hotComponents }) {
+    constructor(repoReaders, { modelAlias, defaultModel, hotComponents }) {
         this.htlResourceResolver = new ResourceResolver(repoReaders);
-        this.bindings = new BindingsProvider({}, modelAlias, this.htlResourceResolver);
+        this.bindings = new BindingsProvider({}, modelAlias, defaultModel, this.htlResourceResolver);
         this.hotComponents = hotComponents;
     }
 

@@ -41,4 +41,5 @@ export default {
         path: path.resolve(__dirname, 'dist'),
     },
     modelAlias: ['model'],
+    defaultModel: '/apps/_models/@default.js',
 };

@@ -48,6 +48,7 @@ class Server {
         this.repoReadersObj = crReposObj;
         this.render = new HTLRender(this.repoReadersObj, {
             modelAlias: this.serverConfig.modelAlias || ['model'],
+            defaultModel: this.serverConfig.defaultModel,
             hotComponents: serverConfig.hotComponents,
         });
         this.proxies = serverConfig.proxies;
